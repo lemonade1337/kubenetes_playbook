@@ -65,17 +65,19 @@ spec:
             cpu: "{{ qwen_cpu_limit }}"
             memory: "{{ qwen_memory_limit }}"
         readinessProbe:
-          httpGet:
-            path: /api/tags
-            port: {{ qwen_port }}
-          initialDelaySeconds: 15
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - "ollama list | grep -q '{{ qwen_model_name }}'"
+          initialDelaySeconds: 30
           periodSeconds: 10
           timeoutSeconds: 5
         livenessProbe:
           httpGet:
             path: /api/tags
             port: {{ qwen_port }}
-          initialDelaySeconds: 30
+          initialDelaySeconds: 60
           periodSeconds: 15
           timeoutSeconds: 5
         volumeMounts:

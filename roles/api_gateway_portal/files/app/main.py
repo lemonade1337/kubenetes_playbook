@@ -92,11 +92,14 @@ def index(request: Request, db: Session = Depends(get_db)):
 @app.get("/login", response_class=HTMLResponse)
 def login_page(request: Request):
     keycloak_auth_url = f"{KEYCLOAK_URL}/realms/{KEYCLOAK_REALM}/protocol/openid-connect/auth?client_id={KEYCLOAK_CLIENT_ID}&response_type=code&scope=openid%20profile%20email"
-    return templates.TemplateResponse("login.html", {
-        "request": request,
-        "keycloak_url": keycloak_auth_url,
-        "error": None
-    })
+    return templates.TemplateResponse(
+        request=request,
+        name="login.html",
+        context={
+            "keycloak_url": keycloak_auth_url,
+            "error": None
+        }
+    )
 
 @app.post("/login", response_class=HTMLResponse)
 async def login_post(
@@ -124,11 +127,15 @@ async def login_post(
         valid = True
 
     if not valid:
-        return templates.TemplateResponse("login.html", {
-            "request": request,
-            "error": "Invalid username or password. Please try again.",
-            "keycloak_url": f"{KEYCLOAK_URL}/realms/{KEYCLOAK_REALM}/protocol/openid-connect/auth"
-        }, status_code=401)
+        return templates.TemplateResponse(
+            request=request,
+            name="login.html",
+            context={
+                "error": "Invalid username or password. Please try again.",
+                "keycloak_url": f"{KEYCLOAK_URL}/realms/{KEYCLOAK_REALM}/protocol/openid-connect/auth"
+            },
+            status_code=401
+        )
 
     # Set session cookie
     redirect_resp = RedirectResponse(url="/dashboard", status_code=status.HTTP_303_SEE_OTHER)
@@ -163,16 +170,19 @@ def user_dashboard(request: Request, db: Session = Depends(get_db)):
     host_header = request.headers.get("host", "localhost")
     api_base_url = f"http://{host_header}"
 
-    return templates.TemplateResponse("dashboard.html", {
-        "request": request,
-        "user": user,
-        "balance": balance,
-        "api_keys": api_keys,
-        "primary_key": primary_key,
-        "logs": logs,
-        "api_base_url": api_base_url,
-        "model_name": TARGET_MODEL
-    })
+    return templates.TemplateResponse(
+        request=request,
+        name="dashboard.html",
+        context={
+            "user": user,
+            "balance": balance,
+            "api_keys": api_keys,
+            "primary_key": primary_key,
+            "logs": logs,
+            "api_base_url": api_base_url,
+            "model_name": TARGET_MODEL
+        }
+    )
 
 @app.get("/admin", response_class=HTMLResponse)
 def admin_dashboard(request: Request, db: Session = Depends(get_db)):
@@ -190,16 +200,19 @@ def admin_dashboard(request: Request, db: Session = Depends(get_db)):
     total_tokens_consumed = db.query(func.sum(UsageLog.total_tokens)).scalar() or 0
     total_active_keys = db.query(ApiKey).filter_by(is_active=True).count()
 
-    return templates.TemplateResponse("admin.html", {
-        "request": request,
-        "user": user,
-        "users": users,
-        "monthly_quota": monthly_quota,
-        "total_tokens_consumed": total_tokens_consumed,
-        "total_active_keys": total_active_keys,
-        "active_qwen_requests": get_active_requests_count(),
-        "model_name": TARGET_MODEL
-    })
+    return templates.TemplateResponse(
+        request=request,
+        name="admin.html",
+        context={
+            "user": user,
+            "users": users,
+            "monthly_quota": monthly_quota,
+            "total_tokens_consumed": total_tokens_consumed,
+            "total_active_keys": total_active_keys,
+            "active_qwen_requests": get_active_requests_count(),
+            "model_name": TARGET_MODEL
+        }
+    )
 
 # ==============================================================================
 # User REST API Endpoints
