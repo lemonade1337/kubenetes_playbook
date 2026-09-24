@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init-script
+  namespace: {{ k8s_namespace }}
+  labels:
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/part-of: qwen-ai-platform
+data:
+  01-init-databases.sh: |
+    #!/bin/bash
+    set -e
+
+    psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
+        -- Create database for Keycloak if not exists
+        SELECT 'CREATE DATABASE {{ postgres_keycloak_db }} OWNER {{ postgres_user }}'
+        WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = '{{ postgres_keycloak_db }}')\gexec
+
+        -- Create database for Token Management Portal if not exists
+        SELECT 'CREATE DATABASE {{ postgres_portal_db }} OWNER {{ postgres_user }}'
+        WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = '{{ postgres_portal_db }}')\gexec
+
+        GRANT ALL PRIVILEGES ON DATABASE {{ postgres_keycloak_db }} TO {{ postgres_user }};
+        GRANT ALL PRIVILEGES ON DATABASE {{ postgres_portal_db }} TO {{ postgres_user }};
+    EOSQL

@@ -1,0 +1,26 @@
+---
+# ==============================================================================
+# Master Ansible Playbook: Qwen 2.5 3B Kubernetes Platform Setup
+# Targets: Docker Desktop Kubernetes Cluster on Windows (2 Worker Nodes)
+# ==============================================================================
+- name: Deploy High-Availability Qwen 2.5 3B AI Platform on Kubernetes
+  hosts: k8s_cluster
+  gather_facts: false
+  roles:
+    - role: prerequisites
+      tags: [prereqs, metrics]
+
+    - role: postgres
+      tags: [db, postgres]
+
+    - role: keycloak
+      tags: [auth, keycloak]
+
+    - role: qwen_llm
+      tags: [llm, qwen, inference]
+
+    - role: api_gateway_portal
+      tags: [gateway, portal, ui]
+
+    - role: ingress
+      tags: [ingress, routing]

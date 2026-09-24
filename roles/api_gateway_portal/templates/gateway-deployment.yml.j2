@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway
+  namespace: {{ k8s_namespace }}
+  labels:
+    app: api-gateway
+    app.kubernetes.io/name: api-gateway
+    app.kubernetes.io/part-of: qwen-ai-platform
+spec:
+  replicas: {{ gateway_replicas }} # 2 Replicas for HA Redundancy
+  selector:
+    matchLabels:
+      app: api-gateway
+  template:
+    metadata:
+      labels:
+        app: api-gateway
+        app.kubernetes.io/name: api-gateway
+        app.kubernetes.io/part-of: qwen-ai-platform
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - api-gateway
+              topologyKey: "kubernetes.io/hostname"
+      containers:
+      - name: gateway
+        image: python:3.11-slim
+        imagePullPolicy: IfNotPresent
+        workingDir: /app
+        command:
+        - "/bin/sh"
+        - "-c"
+        - |
+          echo "[Gateway] Installing dependencies..."
+          pip install --no-cache-dir -r /app/requirements.txt
+          echo "[Gateway] Starting Uvicorn Server..."
+          exec uvicorn main:app --host 0.0.0.0 --port 8000 --workers 2
+        ports:
+        - name: http
+          containerPort: {{ gateway_port }}
+        envFrom:
+        - secretRef:
+            name: api-gateway-secret
+        resources:
+          requests:
+            cpu: "200m"
+            memory: "256Mi"
+          limits:
+            cpu: "1000m"
+            memory: "768Mi"
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: {{ gateway_port }}
+          initialDelaySeconds: 20
+          periodSeconds: 5
+          timeoutSeconds: 3
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: {{ gateway_port }}
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 3
+        volumeMounts:
+        - name: code-volume
+          mountPath: /app
+        - name: templates-volume
+          mountPath: /app/templates
+        - name: static-volume
+          mountPath: /app/static
+      volumes:
+      - name: code-volume
+        configMap:
+          name: api-gateway-code
+      - name: templates-volume
+        configMap:
+          name: api-gateway-templates
+      - name: static-volume
+        configMap:
+          name: api-gateway-static

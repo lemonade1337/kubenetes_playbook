@@ -1,0 +1,55 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-gateway-code
+  namespace: {{ k8s_namespace }}
+  labels:
+    app.kubernetes.io/name: api-gateway
+    app.kubernetes.io/part-of: qwen-ai-platform
+data:
+  requirements.txt: |
+{{ lookup('file', role_path + '/files/app/requirements.txt') | indent(4, true) }}
+  main.py: |
+{{ lookup('file', role_path + '/files/app/main.py') | indent(4, true) }}
+  database.py: |
+{{ lookup('file', role_path + '/files/app/database.py') | indent(4, true) }}
+  models.py: |
+{{ lookup('file', role_path + '/files/app/models.py') | indent(4, true) }}
+  schemas.py: |
+{{ lookup('file', role_path + '/files/app/schemas.py') | indent(4, true) }}
+  auth.py: |
+{{ lookup('file', role_path + '/files/app/auth.py') | indent(4, true) }}
+  proxy.py: |
+{{ lookup('file', role_path + '/files/app/proxy.py') | indent(4, true) }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-gateway-templates
+  namespace: {{ k8s_namespace }}
+  labels:
+    app.kubernetes.io/name: api-gateway
+    app.kubernetes.io/part-of: qwen-ai-platform
+data:
+  base.html: |
+{{ lookup('file', role_path + '/files/app/templates/base.html') | indent(4, true) }}
+  login.html: |
+{{ lookup('file', role_path + '/files/app/templates/login.html') | indent(4, true) }}
+  dashboard.html: |
+{{ lookup('file', role_path + '/files/app/templates/dashboard.html') | indent(4, true) }}
+  admin.html: |
+{{ lookup('file', role_path + '/files/app/templates/admin.html') | indent(4, true) }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-gateway-static
+  namespace: {{ k8s_namespace }}
+  labels:
+    app.kubernetes.io/name: api-gateway
+    app.kubernetes.io/part-of: qwen-ai-platform
+data:
+  style.css: |
+{{ lookup('file', role_path + '/files/app/static/style.css') | indent(4, true) }}
+  app.js: |
+{{ lookup('file', role_path + '/files/app/static/app.js') | indent(4, true) }}

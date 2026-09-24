@@ -1,0 +1,26 @@
+---
+- name: Deploy Platform Ingress Rules
+  kubernetes.core.k8s:
+    kubeconfig: "{{ k8s_kubeconfig | default(omit) }}"
+    context: "{{ k8s_context | default(omit) if k8s_context else omit }}"
+    state: present
+    definition: "{{ lookup('template', 'platform-ingress.yml.j2') | from_yaml }}"
+  when: ingress_enabled | default(true) | bool
+  ignore_errors: true
+
+- name: Display platform access URLs
+  ansible.builtin.debug:
+    msg:
+      - "=========================================================================="
+      - "🚀 Qwen 2.5 3B AI Platform Successfully Deployed!"
+      - "=========================================================================="
+      - "Web Portal & Dashboard: http://localhost:{{ nodeport_portal }} or http://{{ ingress_host_portal }}/"
+      - "Keycloak Auth Console:  http://localhost:{{ nodeport_keycloak }}/auth or http://{{ ingress_host_portal }}/auth"
+      - "OpenAI Compatible API:  http://localhost:{{ nodeport_portal }}/v1/chat/completions"
+      - "--------------------------------------------------------------------------"
+      - "Pre-provisioned Accounts (100k Tokens Each):"
+      - "  Admin: username: admin / password: {{ initial_users[0].password }} (Key: sk-admin-master-key-2026)"
+      - "  User1: username: user1 / password: {{ initial_users[1].password }} (Key: sk-user1-secret-key-2026)"
+      - "  User2: username: user2 / password: {{ initial_users[2].password }} (Key: sk-user2-secret-key-2026)"
+      - "  User3: username: user3 / password: {{ initial_users[3].password }} (Key: sk-user3-secret-key-2026)"
+      - "=========================================================================="

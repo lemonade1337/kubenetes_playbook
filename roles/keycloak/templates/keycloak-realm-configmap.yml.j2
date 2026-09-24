@@ -1,0 +1,81 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: keycloak-realm-config
+  namespace: {{ k8s_namespace }}
+  labels:
+    app.kubernetes.io/name: keycloak
+    app.kubernetes.io/part-of: qwen-ai-platform
+data:
+  realm-export.json: |
+    {
+      "realm": "{{ keycloak_realm_name }}",
+      "enabled": true,
+      "displayName": "LLM Platform Authentication",
+      "sslRequired": "none",
+      "registrationAllowed": true,
+      "loginWithEmailAllowed": true,
+      "duplicateEmailsAllowed": false,
+      "resetPasswordAllowed": true,
+      "roles": {
+        "realm": [
+          {
+            "name": "admin",
+            "description": "Administrator role with full platform access, user management, and token balance controls"
+          },
+          {
+            "name": "user",
+            "description": "Standard user role with access to personal API keys and token balance"
+          }
+        ]
+      },
+      "clients": [
+        {
+          "clientId": "{{ keycloak_client_id }}",
+          "name": "LLM Token Portal & API Gateway",
+          "enabled": true,
+          "protocol": "openid-connect",
+          "publicClient": false,
+          "secret": "{{ keycloak_client_secret }}",
+          "standardFlowEnabled": true,
+          "implicitFlowEnabled": false,
+          "directAccessGrantsEnabled": true,
+          "serviceAccountsEnabled": true,
+          "redirectUris": [
+            "http://localhost:8000/*",
+            "http://localhost:30080/*",
+            "http://localhost/*",
+            "http://127.0.0.1:8000/*",
+            "http://127.0.0.1:30080/*",
+            "http://127.0.0.1/*",
+            "*"
+          ],
+          "webOrigins": [
+            "+"
+          ]
+        }
+      ],
+      "users": [
+        {% for u in initial_users %}
+        {
+          "username": "{{ u.username }}",
+          "enabled": true,
+          "email": "{{ u.email }}",
+          "emailVerified": true,
+          "firstName": "{{ u.first_name }}",
+          "lastName": "{{ u.last_name }}",
+          "credentials": [
+            {
+              "type": "password",
+              "value": "{{ u.password }}",
+              "temporary": false
+            }
+          ],
+          "realmRoles": [
+            "user"{% if u.is_admin %},
+            "admin"{% endif %}
+          ]
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+      ]
+    }

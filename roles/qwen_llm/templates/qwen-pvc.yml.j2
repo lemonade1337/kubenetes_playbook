@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: qwen-model-cache-pvc
+  namespace: {{ k8s_namespace }}
+  labels:
+    app: qwen-llm
+    app.kubernetes.io/name: qwen-llm
+    app.kubernetes.io/part-of: qwen-ai-platform
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ qwen_storage_size }}

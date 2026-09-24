@@ -1,0 +1,109 @@
+---
+# ==============================================================================
+# Global Kubernetes Configuration
+# ==============================================================================
+k8s_namespace: "llm-platform"
+k8s_kubeconfig: "{{ lookup('env', 'KUBECONFIG') | default('~/.kube/config', true) }}"
+k8s_context: "{{ lookup('env', 'K8S_CONTEXT') | default('', true) }}"
+k8s_storage_class: "hostpath" # Default for Docker Desktop on Windows, or standard
+
+# ==============================================================================
+# Database Configuration (PostgreSQL HA / Redundant 2 Replicas)
+# ==============================================================================
+postgres_replicas: 2
+postgres_port: 5432
+postgres_db_name: "llm_platform"
+postgres_user: "llm_admin"
+postgres_password: "PostgresSecurePassword2026!"
+postgres_keycloak_db: "keycloak"
+postgres_portal_db: "token_portal"
+postgres_storage_size: "5Gi"
+postgres_service_name: "postgres-service"
+
+# ==============================================================================
+# Keycloak Configuration (HA Redundant 2 Replicas)
+# ==============================================================================
+keycloak_replicas: 2
+keycloak_admin_user: "admin"
+keycloak_admin_password: "KeycloakMasterAdmin2026!"
+keycloak_realm_name: "llm-platform"
+keycloak_client_id: "token-portal"
+keycloak_client_secret: "token-portal-secret-key-2026"
+keycloak_service_name: "keycloak-service"
+keycloak_port: 8080
+keycloak_http_relative_path: "/auth"
+
+# Initial pre-provisioned users (1 Admin + 3 Example Users)
+initial_users:
+  - username: "admin"
+    email: "admin@example.com"
+    password: "AdminPass123!"
+    first_name: "System"
+    last_name: "Administrator"
+    is_admin: true
+    initial_tokens: 100000
+    monthly_quota: 100000
+  - username: "user1"
+    email: "user1@example.com"
+    password: "User1Pass123!"
+    first_name: "Alice"
+    last_name: "Engineer"
+    is_admin: false
+    initial_tokens: 100000
+    monthly_quota: 100000
+  - username: "user2"
+    email: "user2@example.com"
+    password: "User2Pass123!"
+    first_name: "Bob"
+    last_name: "Researcher"
+    is_admin: false
+    initial_tokens: 100000
+    monthly_quota: 100000
+  - username: "user3"
+    email: "user3@example.com"
+    password: "User3Pass123!"
+    first_name: "Charlie"
+    last_name: "DataScientist"
+    is_admin: false
+    initial_tokens: 100000
+    monthly_quota: 100000
+
+# ==============================================================================
+# Qwen 2.5 3B LLM Inference Service Configuration
+# Starts at 1 replica, scales dynamically up to 6 replicas when in use
+# ==============================================================================
+qwen_model_name: "qwen2.5:3b"
+qwen_min_replicas: 1
+qwen_max_replicas: 6
+qwen_hpa_cpu_percent: 50 # When active inference occurs, CPU load triggers autoscaling
+qwen_service_name: "qwen-llm-service"
+qwen_port: 11434
+qwen_storage_size: "10Gi"
+qwen_cpu_request: "1000m"
+qwen_cpu_limit: "4000m"
+qwen_memory_request: "2Gi"
+qwen_memory_limit: "6Gi"
+
+# ==============================================================================
+# API Gateway & Token Management Web Portal Configuration (Redundant 2 Replicas)
+# ==============================================================================
+gateway_replicas: 2
+gateway_service_name: "api-gateway-service"
+gateway_port: 8000
+gateway_secret_key: "gateway-session-super-secret-key-change-in-prod"
+default_user_token_balance: 100000
+default_monthly_token_quota: 100000
+
+# ==============================================================================
+# Ingress & External Access Configuration (Docker Desktop friendly)
+# ==============================================================================
+ingress_enabled: true
+ingress_class_name: "nginx"
+ingress_host_portal: "localhost" # Accessible at http://localhost
+ingress_host_keycloak: "localhost" # Keycloak at http://localhost/auth
+ingress_host_api: "localhost" # API at http://localhost/v1
+
+# NodePort Fallback (for direct port access without Ingress Controller on Docker Desktop)
+nodeport_portal: 30080
+nodeport_keycloak: 30090
+nodeport_qwen: 30100

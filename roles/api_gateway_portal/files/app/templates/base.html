@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Qwen 2.5 3B AI Platform{% endblock %}</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#312e81'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Marked.js for Markdown parsing & Highlight.js for code rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans antialiased selection:bg-indigo-500 selection:text-white">
+    <!-- Navbar -->
+    <nav class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                    <i class="fa-solid fa-microchip text-white text-lg"></i>
+                </div>
+                <div>
+                    <span class="font-bold text-lg bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">Qwen 2.5 3B</span>
+                    <span class="text-xs ml-2 px-2 py-0.5 rounded-full bg-indigo-950/80 text-indigo-400 border border-indigo-800/60 font-mono">K8s Cluster</span>
+                </div>
+            </div>
+
+            {% if user is defined and user %}
+            <div class="flex items-center space-x-4">
+                <a href="/dashboard" class="px-3 py-1.5 text-sm font-medium rounded-lg hover:bg-slate-800 transition {% if request.url.path == '/dashboard' %}text-indigo-400 bg-slate-800/80{% else %}text-slate-300{% endif %}">
+                    <i class="fa-solid fa-gauge mr-1.5"></i> Dashboard
+                </a>
+                {% if user.role == 'admin' or user.username == 'admin' %}
+                <a href="/admin" class="px-3 py-1.5 text-sm font-medium rounded-lg hover:bg-slate-800 transition {% if request.url.path == '/admin' %}text-amber-400 bg-slate-800/80{% else %}text-slate-300{% endif %}">
+                    <i class="fa-solid fa-shield-halved mr-1.5"></i> Admin
+                </a>
+                {% endif %}
+                <div class="h-5 w-px bg-slate-800"></div>
+                <div class="flex items-center space-x-3">
+                    <div class="text-right hidden sm:block">
+                        <div class="text-sm font-semibold text-slate-200">{{ user.username }}</div>
+                        <div class="text-xs text-slate-400">{{ user.role | capitalize }}</div>
+                    </div>
+                    <a href="/logout" class="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-lg transition" title="Logout">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-900 bg-slate-950 py-6 text-center text-xs text-slate-500">
+        <p>Kubernetes Qwen 2.5 3B Cluster &bull; Keycloak OIDC Authentication &bull; Dynamic 1-6 Pod Autoscaling</p>
+    </footer>
+
+    <script src="/static/app.js"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

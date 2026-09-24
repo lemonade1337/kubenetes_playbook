@@ -1,0 +1,44 @@
+---
+- name: Deploy Keycloak Secret
+  kubernetes.core.k8s:
+    kubeconfig: "{{ k8s_kubeconfig | default(omit) }}"
+    context: "{{ k8s_context | default(omit) if k8s_context else omit }}"
+    state: present
+    definition: "{{ lookup('template', 'keycloak-secret.yml.j2') | from_yaml }}"
+
+- name: Deploy Keycloak Realm ConfigMap
+  kubernetes.core.k8s:
+    kubeconfig: "{{ k8s_kubeconfig | default(omit) }}"
+    context: "{{ k8s_context | default(omit) if k8s_context else omit }}"
+    state: present
+    definition: "{{ lookup('template', 'keycloak-realm-configmap.yml.j2') | from_yaml }}"
+
+- name: Deploy Keycloak Deployment (Redundant 2 Replicas)
+  kubernetes.core.k8s:
+    kubeconfig: "{{ k8s_kubeconfig | default(omit) }}"
+    context: "{{ k8s_context | default(omit) if k8s_context else omit }}"
+    state: present
+    definition: "{{ lookup('template', 'keycloak-deployment.yml.j2') | from_yaml }}"
+
+- name: Deploy Keycloak Service
+  kubernetes.core.k8s:
+    kubeconfig: "{{ k8s_kubeconfig | default(omit) }}"
+    context: "{{ k8s_context | default(omit) if k8s_context else omit }}"
+    state: present
+    definition: "{{ lookup('template', 'keycloak-service.yml.j2') | from_yaml }}"
+
+- name: Wait for Keycloak pods to be ready
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ k8s_kubeconfig | default(omit) }}"
+    context: "{{ k8s_context | default(omit) if k8s_context else omit }}"
+    kind: Deployment
+    namespace: "{{ k8s_namespace }}"
+    name: "keycloak"
+  register: kc_deploy
+  until: >
+    kc_deploy.resources is defined and
+    (kc_deploy.resources | length > 0) and
+    (kc_deploy.resources[0].status.readyReplicas | default(0) >= 1)
+  retries: 30
+  delay: 10
+  ignore_errors: true

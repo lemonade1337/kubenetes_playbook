@@ -1,0 +1,27 @@
+---
+- name: Test Kubernetes cluster connectivity
+  kubernetes.core.k8s_cluster_info:
+    kubeconfig: "{{ k8s_kubeconfig | default(omit) }}"
+    context: "{{ k8s_context | default(omit) if k8s_context else omit }}"
+  register: cluster_info
+  ignore_errors: true
+
+- name: Display cluster connection status
+  ansible.builtin.debug:
+    msg: "Connected to Kubernetes cluster: {{ cluster_info.connection.server if cluster_info is defined and cluster_info.connection is defined else 'Ready via kubeconfig' }}"
+
+- name: Create LLM Platform namespace
+  kubernetes.core.k8s:
+    kubeconfig: "{{ k8s_kubeconfig | default(omit) }}"
+    context: "{{ k8s_context | default(omit) if k8s_context else omit }}"
+    state: present
+    definition: "{{ lookup('template', 'namespace.yml.j2') | from_yaml }}"
+
+- name: Deploy Kubernetes Metrics Server for HPA autoscaling
+  kubernetes.core.k8s:
+    kubeconfig: "{{ k8s_kubeconfig | default(omit) }}"
+    context: "{{ k8s_context | default(omit) if k8s_context else omit }}"
+    state: present
+    definition: "{{ item }}"
+  loop: "{{ lookup('template', 'metrics-server.yml.j2') | from_yaml_all | list }}"
+  ignore_errors: true

@@ -1,0 +1,109 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keycloak
+  namespace: {{ k8s_namespace }}
+  labels:
+    app: keycloak
+    app.kubernetes.io/name: keycloak
+    app.kubernetes.io/part-of: qwen-ai-platform
+spec:
+  replicas: {{ keycloak_replicas }}
+  selector:
+    matchLabels:
+      app: keycloak
+  template:
+    metadata:
+      labels:
+        app: keycloak
+        app.kubernetes.io/name: keycloak
+        app.kubernetes.io/part-of: qwen-ai-platform
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - keycloak
+              topologyKey: "kubernetes.io/hostname"
+      containers:
+      - name: keycloak
+        image: quay.io/keycloak/keycloak:24.0.5
+        imagePullPolicy: IfNotPresent
+        args:
+        - "start"
+        - "--import-realm"
+        - "--http-enabled=true"
+        - "--hostname-strict=false"
+        - "--http-relative-path={{ keycloak_http_relative_path }}"
+        - "--cache=local"
+        ports:
+        - name: http
+          containerPort: {{ keycloak_port }}
+        env:
+        - name: KEYCLOAK_ADMIN
+          valueFrom:
+            secretKeyRef:
+              name: keycloak-secret
+              key: KEYCLOAK_ADMIN
+        - name: KEYCLOAK_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: keycloak-secret
+              key: KEYCLOAK_ADMIN_PASSWORD
+        - name: KC_DB
+          value: postgres
+        - name: KC_DB_URL_HOST
+          value: "{{ postgres_service_name }}"
+        - name: KC_DB_URL_PORT
+          value: "{{ postgres_port }}"
+        - name: KC_DB_URL_DATABASE
+          value: "{{ postgres_keycloak_db }}"
+        - name: KC_DB_USERNAME
+          value: "{{ postgres_user }}"
+        - name: KC_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: keycloak-secret
+              key: KC_DB_PASSWORD
+        - name: KC_HEALTH_ENABLED
+          value: "true"
+        - name: KC_METRICS_ENABLED
+          value: "true"
+        - name: KC_PROXY_HEADERS
+          value: "xforwarded"
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "768Mi"
+          limits:
+            cpu: "1500m"
+            memory: "1536Mi"
+        readinessProbe:
+          httpGet:
+            path: {{ keycloak_http_relative_path }}/health/ready
+            port: {{ keycloak_port }}
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: {{ keycloak_http_relative_path }}/health/live
+            port: {{ keycloak_port }}
+          initialDelaySeconds: 40
+          periodSeconds: 15
+          timeoutSeconds: 5
+        volumeMounts:
+        - name: realm-config
+          mountPath: /opt/keycloak/data/import/realm-export.json
+          subPath: realm-export.json
+          readOnly: true
+      volumes:
+      - name: realm-config
+        configMap:
+          name: keycloak-realm-config

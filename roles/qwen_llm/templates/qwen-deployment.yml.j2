@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qwen-llm
+  namespace: {{ k8s_namespace }}
+  labels:
+    app: qwen-llm
+    app.kubernetes.io/name: qwen-llm
+    app.kubernetes.io/part-of: qwen-ai-platform
+spec:
+  replicas: {{ qwen_min_replicas }} # Starts at 1 instance
+  selector:
+    matchLabels:
+      app: qwen-llm
+  template:
+    metadata:
+      labels:
+        app: qwen-llm
+        app.kubernetes.io/name: qwen-llm
+        app.kubernetes.io/part-of: qwen-ai-platform
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - qwen-llm
+              topologyKey: "kubernetes.io/hostname"
+      containers:
+      - name: qwen-inference
+        image: ollama/ollama:latest
+        imagePullPolicy: IfNotPresent
+        command:
+        - "/bin/sh"
+        - "-c"
+        - |
+          ollama serve &
+          SERVER_PID=$!
+          echo "[Qwen Service] Waiting for Ollama engine to start..."
+          until curl -s http://127.0.0.1:11434/api/tags >/dev/null 2>&1; do
+            sleep 1
+          done
+          echo "[Qwen Service] Engine ready. Pulling model {{ qwen_model_name }}..."
+          ollama pull {{ qwen_model_name }}
+          echo "[Qwen Service] Model {{ qwen_model_name }} is ready for inference."
+          wait $SERVER_PID
+        ports:
+        - name: http
+          containerPort: {{ qwen_port }}
+        env:
+        - name: OLLAMA_KEEP_ALIVE
+          value: "24h"
+        - name: OLLAMA_NUM_PARALLEL
+          value: "1" # Ensures 1 concurrent slot per pod so load triggers autoscaling!
+        resources:
+          requests:
+            cpu: "{{ qwen_cpu_request }}"
+            memory: "{{ qwen_memory_request }}"
+          limits:
+            cpu: "{{ qwen_cpu_limit }}"
+            memory: "{{ qwen_memory_limit }}"
+        readinessProbe:
+          httpGet:
+            path: /api/tags
+            port: {{ qwen_port }}
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          timeoutSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /api/tags
+            port: {{ qwen_port }}
+          initialDelaySeconds: 30
+          periodSeconds: 15
+          timeoutSeconds: 5
+        volumeMounts:
+        - name: ollama-cache
+          mountPath: /root/.ollama
+      volumes:
+      - name: ollama-cache
+        emptyDir: {}

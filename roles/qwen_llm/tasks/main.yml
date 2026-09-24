@@ -1,0 +1,37 @@
+---
+- name: Deploy Qwen 2.5 3B Deployment (Starts with 1 replica)
+  kubernetes.core.k8s:
+    kubeconfig: "{{ k8s_kubeconfig | default(omit) }}"
+    context: "{{ k8s_context | default(omit) if k8s_context else omit }}"
+    state: present
+    definition: "{{ lookup('template', 'qwen-deployment.yml.j2') | from_yaml }}"
+
+- name: Deploy Qwen 2.5 3B Service
+  kubernetes.core.k8s:
+    kubeconfig: "{{ k8s_kubeconfig | default(omit) }}"
+    context: "{{ k8s_context | default(omit) if k8s_context else omit }}"
+    state: present
+    definition: "{{ lookup('template', 'qwen-service.yml.j2') | from_yaml }}"
+
+- name: Deploy Qwen 2.5 3B HorizontalPodAutoscaler (Min 1, Max 6)
+  kubernetes.core.k8s:
+    kubeconfig: "{{ k8s_kubeconfig | default(omit) }}"
+    context: "{{ k8s_context | default(omit) if k8s_context else omit }}"
+    state: present
+    definition: "{{ lookup('template', 'qwen-hpa.yml.j2') | from_yaml }}"
+
+- name: Wait for initial Qwen 2.5 3B pod to become ready
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ k8s_kubeconfig | default(omit) }}"
+    context: "{{ k8s_context | default(omit) if k8s_context else omit }}"
+    kind: Deployment
+    namespace: "{{ k8s_namespace }}"
+    name: "qwen-llm"
+  register: qwen_deploy
+  until: >
+    qwen_deploy.resources is defined and
+    (qwen_deploy.resources | length > 0) and
+    (qwen_deploy.resources[0].status.readyReplicas | default(0) >= 1)
+  retries: 40
+  delay: 15
+  ignore_errors: true

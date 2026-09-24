@@ -1,0 +1,45 @@
+---
+- name: Deploy PostgreSQL Secret
+  kubernetes.core.k8s:
+    kubeconfig: "{{ k8s_kubeconfig | default(omit) }}"
+    context: "{{ k8s_context | default(omit) if k8s_context else omit }}"
+    state: present
+    definition: "{{ lookup('template', 'postgres-secret.yml.j2') | from_yaml }}"
+
+- name: Deploy PostgreSQL Init Scripts ConfigMap
+  kubernetes.core.k8s:
+    kubeconfig: "{{ k8s_kubeconfig | default(omit) }}"
+    context: "{{ k8s_context | default(omit) if k8s_context else omit }}"
+    state: present
+    definition: "{{ lookup('template', 'postgres-config.yml.j2') | from_yaml }}"
+
+- name: Deploy PostgreSQL StatefulSet (Redundant 2 Replicas)
+  kubernetes.core.k8s:
+    kubeconfig: "{{ k8s_kubeconfig | default(omit) }}"
+    context: "{{ k8s_context | default(omit) if k8s_context else omit }}"
+    state: present
+    definition: "{{ lookup('template', 'postgres-statefulset.yml.j2') | from_yaml }}"
+
+- name: Deploy PostgreSQL Service
+  kubernetes.core.k8s:
+    kubeconfig: "{{ k8s_kubeconfig | default(omit) }}"
+    context: "{{ k8s_context | default(omit) if k8s_context else omit }}"
+    state: present
+    definition: "{{ lookup('template', 'postgres-service.yml.j2') | from_yaml }}"
+
+- name: Wait for PostgreSQL primary pod to be ready
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ k8s_kubeconfig | default(omit) }}"
+    context: "{{ k8s_context | default(omit) if k8s_context else omit }}"
+    kind: Pod
+    namespace: "{{ k8s_namespace }}"
+    name: "postgres-0"
+  register: postgres_pod
+  until: >
+    postgres_pod.resources is defined and
+    (postgres_pod.resources | length > 0) and
+    (postgres_pod.resources[0].status.containerStatuses is defined) and
+    (postgres_pod.resources[0].status.containerStatuses[0].ready | default(false))
+  retries: 30
+  delay: 10
+  ignore_errors: true

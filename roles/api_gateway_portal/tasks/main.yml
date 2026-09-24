@@ -1,0 +1,45 @@
+---
+- name: Deploy API Gateway & Portal Secret
+  kubernetes.core.k8s:
+    kubeconfig: "{{ k8s_kubeconfig | default(omit) }}"
+    context: "{{ k8s_context | default(omit) if k8s_context else omit }}"
+    state: present
+    definition: "{{ lookup('template', 'gateway-secret.yml.j2') | from_yaml }}"
+
+- name: Deploy API Gateway & Portal ConfigMaps (Code, Templates, Static Assets)
+  kubernetes.core.k8s:
+    kubeconfig: "{{ k8s_kubeconfig | default(omit) }}"
+    context: "{{ k8s_context | default(omit) if k8s_context else omit }}"
+    state: present
+    definition: "{{ item }}"
+  loop: "{{ lookup('template', 'gateway-configmap.yml.j2') | from_yaml_all | list }}"
+
+- name: Deploy API Gateway & Portal Deployment (Redundant 2 Replicas)
+  kubernetes.core.k8s:
+    kubeconfig: "{{ k8s_kubeconfig | default(omit) }}"
+    context: "{{ k8s_context | default(omit) if k8s_context else omit }}"
+    state: present
+    definition: "{{ lookup('template', 'gateway-deployment.yml.j2') | from_yaml }}"
+
+- name: Deploy API Gateway & Portal Service
+  kubernetes.core.k8s:
+    kubeconfig: "{{ k8s_kubeconfig | default(omit) }}"
+    context: "{{ k8s_context | default(omit) if k8s_context else omit }}"
+    state: present
+    definition: "{{ lookup('template', 'gateway-service.yml.j2') | from_yaml }}"
+
+- name: Wait for API Gateway pods to be ready
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ k8s_kubeconfig | default(omit) }}"
+    context: "{{ k8s_context | default(omit) if k8s_context else omit }}"
+    kind: Deployment
+    namespace: "{{ k8s_namespace }}"
+    name: "api-gateway"
+  register: gw_deploy
+  until: >
+    gw_deploy.resources is defined and
+    (gw_deploy.resources | length > 0) and
+    (gw_deploy.resources[0].status.readyReplicas | default(0) >= 1)
+  retries: 30
+  delay: 10
+  ignore_errors: true
