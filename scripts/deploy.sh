@@ -11,6 +11,16 @@ if ! command -v ansible-playbook &> /dev/null; then
     exit 1
 fi
 
+# Ensure ~/.kube/config is available (auto-detect Windows Docker Desktop if in WSL)
+if [ ! -f "$HOME/.kube/config" ] && [ -z "$KUBECONFIG" ]; then
+    WIN_KUBECONFIG=$(ls -d /mnt/c/Users/*/.kube/config 2>/dev/null | head -n 1 || true)
+    if [ -n "$WIN_KUBECONFIG" ] && [ -f "$WIN_KUBECONFIG" ]; then
+        echo "🔗 Linking Windows Docker Desktop kubeconfig from $WIN_KUBECONFIG..."
+        mkdir -p "$HOME/.kube"
+        ln -sf "$WIN_KUBECONFIG" "$HOME/.kube/config"
+    fi
+fi
+
 # Run the playbook
 ansible-playbook -i inventory.ini playbook.yml "$@"
 

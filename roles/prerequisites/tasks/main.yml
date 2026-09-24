@@ -8,7 +8,7 @@
 
 - name: Display cluster connection status
   ansible.builtin.debug:
-    msg: "Connected to Kubernetes cluster: {{ cluster_info.connection.server if cluster_info is defined and cluster_info.connection is defined else 'Ready via kubeconfig' }}"
+    msg: "Connected to Kubernetes cluster: {{ cluster_info.connection.host | default('Connected successfully') }}"
 
 - name: Create LLM Platform namespace
   kubernetes.core.k8s:

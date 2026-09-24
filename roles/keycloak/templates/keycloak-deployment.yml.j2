@@ -36,16 +36,16 @@ spec:
         image: quay.io/keycloak/keycloak:24.0.5
         imagePullPolicy: IfNotPresent
         args:
-        - "start"
+        - "start-dev"
         - "--import-realm"
-        - "--http-enabled=true"
         - "--hostname-strict=false"
         - "--http-relative-path={{ keycloak_http_relative_path }}"
-        - "--cache=local"
         ports:
         - name: http
           containerPort: {{ keycloak_port }}
         env:
+        - name: JAVA_OPTS_APPEND
+          value: "-Xms256m -Xmx1024m -XX:MaxMetaspaceSize=256m"
         - name: KEYCLOAK_ADMIN
           valueFrom:
             secretKeyRef:
@@ -79,24 +79,24 @@ spec:
           value: "xforwarded"
         resources:
           requests:
-            cpu: "500m"
-            memory: "768Mi"
+            cpu: "300m"
+            memory: "512Mi"
           limits:
             cpu: "1500m"
-            memory: "1536Mi"
+            memory: "2048Mi"
         readinessProbe:
           httpGet:
             path: {{ keycloak_http_relative_path }}/health/ready
             port: {{ keycloak_port }}
-          initialDelaySeconds: 30
-          periodSeconds: 10
+          initialDelaySeconds: 20
+          periodSeconds: 5
           timeoutSeconds: 5
         livenessProbe:
           httpGet:
             path: {{ keycloak_http_relative_path }}/health/live
             port: {{ keycloak_port }}
-          initialDelaySeconds: 40
-          periodSeconds: 15
+          initialDelaySeconds: 30
+          periodSeconds: 10
           timeoutSeconds: 5
         volumeMounts:
         - name: realm-config
