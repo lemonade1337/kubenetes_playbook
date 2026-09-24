@@ -1,42 +1,42 @@
-# 🚀 High-Availability Qwen 2.5 3B Platform on Kubernetes
+# High-Availability Qwen 2.5 3B Platform on Kubernetes
 
-A production-ready Ansible playbook and Kubernetes architecture designed for **Docker Desktop on Windows** (with 2 worker nodes). This platform deploys a scalable **Qwen 2.5 3B** LLM inference service, **Keycloak OIDC Authentication**, an **OpenAI-Compatible API Gateway**, and a **Token Management Web Portal**.
+A production-ready Ansible playbook and Kubernetes architecture designed for **Docker Desktop on Windows** (with 2 worker nodes). This platform deploys a scalable **Qwen 2.5 3B** LLM inference service, **Keycloak Authentication**, an **OpenAI-Compatible API Gateway**, and a **Token Management Web Portal**.
 
 ---
 
-## 🏗️ Architecture Overview
+## Architecture Overview
 
 ```mermaid
 flowchart TD
     subgraph Clients["Clients & Users"]
-        Browser["🌐 Web Browser / Portal"]
-        APIClient["💻 OpenAI SDK / cURL / Apps"]
+        Browser["Web Browser / Portal"]
+        APIClient["OpenAI SDK / cURL / Apps"]
     end
 
     subgraph IngressLayer["Ingress & Routing"]
-        Ingress["🔀 NGINX Ingress / NodePorts (30080, 30090, 30100)"]
+        Ingress["NGINX Ingress / NodePorts (30080, 30090, 30100)"]
     end
 
     subgraph Node1["Kubernetes Worker Node 1"]
-        GW1["🛡️ API Gateway & Portal (Pod 1)"]
-        KC1["🔐 Keycloak SSO (Pod 1)"]
-        PG1["💾 PostgreSQL HA (Pod 1)"]
-        QW1["⚡ Qwen 2.5 3B (Pod 1 - Active)"]
+        GW1["API Gateway & Portal (Pod 1)"]
+        KC1["Keycloak Auth (Pod 1)"]
+        PG1["PostgreSQL HA (Pod 1)"]
+        QW1["Qwen 2.5 3B (Pod 1 - Active)"]
     end
 
     subgraph Node2["Kubernetes Worker Node 2"]
-        GW2["🛡️ API Gateway & Portal (Pod 2)"]
-        KC2["🔐 Keycloak SSO (Pod 2)"]
-        PG2["💾 PostgreSQL HA (Pod 2)"]
-        QW2["⚡ Qwen 2.5 3B (Auto-scaled Pods 2-6)"]
+        GW2["API Gateway & Portal (Pod 2)"]
+        KC2["Keycloak Auth (Pod 2)"]
+        PG2["PostgreSQL HA (Pod 2)"]
+        QW2["Qwen 2.5 3B (Auto-scaled Pods 2-6)"]
     end
 
     subgraph Scaling["Autoscaling Engine"]
-        HPA["📈 HorizontalPodAutoscaler (HPA)<br/>Min: 1 Pod &bull; Max: 6 Pods"]
-        Metrics["📊 Kubernetes Metrics Server"]
+        HPA["HorizontalPodAutoscaler (HPA)<br/>Min: 1 Pod &bull; Max: 6 Pods"]
+        Metrics["Kubernetes Metrics Server"]
     end
 
-    Browser -->|HTTP UI / SSO| Ingress
+    Browser -->|HTTP UI| Ingress
     APIClient -->|Bearer API Key| Ingress
 
     Ingress --> GW1
@@ -46,8 +46,8 @@ flowchart TD
 
     GW1 -->|Validate Auth & Deduct Tokens| PG1
     GW2 -->|Validate Auth & Deduct Tokens| PG2
-    GW1 -->|OIDC Token Exchange| KC1
-    GW2 -->|OIDC Token Exchange| KC2
+    GW1 -->|Keycloak Token Exchange| KC1
+    GW2 -->|Keycloak Token Exchange| KC2
 
     GW1 -->|Forward /v1/chat/completions| QW1
     GW2 -->|Forward /v1/chat/completions| QW2
@@ -59,7 +59,7 @@ flowchart TD
 
 ---
 
-## 🌟 Key Features
+## Key Features
 
 1. **Qwen 2.5 3B Dynamic Autoscaling (1 to 6 Pods)**:
    - Starts at **1 replica** to conserve resources.
@@ -69,17 +69,17 @@ flowchart TD
 2. **Full Redundancy & High Availability**:
    - Deployed across **2 Kubernetes worker nodes**.
    - **PostgreSQL Database**: Redundant 2-replica StatefulSet with persistent storage.
-   - **Keycloak OIDC Server**: Redundant 2-replica deployment with pod anti-affinity.
+   - **Keycloak Server**: Redundant 2-replica deployment with pod anti-affinity.
    - **API Gateway & Web Portal**: Redundant 2-replica deployment with pod anti-affinity.
 
 3. **Keycloak Authentication & Pre-provisioned Accounts**:
-   - Realm: `llm-platform` with OIDC client `token-portal`.
+   - Realm: `llm-platform` with client `token-portal`.
    - **Every user is automatically granted 100,000 initial tokens**.
    - Pre-configured accounts:
-     - 👑 **Admin**: `admin` / `AdminPass123!` (Role: `admin`, Pre-seeded Key: `sk-admin-master-key-2026`)
-     - 👤 **User 1**: `user1` / `User1Pass123!` (Role: `user`, Pre-seeded Key: `sk-user1-secret-key-2026`)
-     - 👤 **User 2**: `user2` / `User2Pass123!` (Role: `user`, Pre-seeded Key: `sk-user2-secret-key-2026`)
-     - 👤 **User 3**: `user3` / `User3Pass123!` (Role: `user`, Pre-seeded Key: `sk-user3-secret-key-2026`)
+     - **Admin**: `admin` / `AdminPass123!` (Role: `admin`, Pre-seeded Key: `sk-admin-master-key-2026`)
+     - **User 1**: `user1` / `User1Pass123!` (Role: `user`, Pre-seeded Key: `sk-user1-secret-key-2026`)
+     - **User 2**: `user2` / `User2Pass123!` (Role: `user`, Pre-seeded Key: `sk-user2-secret-key-2026`)
+     - **User 3**: `user3` / `User3Pass123!` (Role: `user`, Pre-seeded Key: `sk-user3-secret-key-2026`)
 
 4. **Token Management & Interactive Web Chat Portal**:
    - **Interactive Qwen 2.5 3B Chat Field**: Chat in real-time directly on the web portal with markdown formatting, syntax highlighting, conversation history, and quick prompts.
@@ -89,7 +89,7 @@ flowchart TD
 
 ---
 
-## 📁 Repository Structure
+## Repository Structure
 
 ```
 .
@@ -102,12 +102,13 @@ flowchart TD
 ├── roles/
 │   ├── prerequisites/                   # Namespace and Metrics Server
 │   ├── postgres/                        # PostgreSQL HA StatefulSet (2 replicas)
-│   ├── keycloak/                        # Keycloak HA OIDC Server (2 replicas)
+│   ├── keycloak/                        # Keycloak HA Server (2 replicas)
 │   ├── qwen_llm/                        # Qwen 2.5 3B Service & HPA (1 to 6 replicas)
 │   ├── api_gateway_portal/              # FastAPI Portal, Token Metering, & UI (2 replicas)
 │   └── ingress/                         # Ingress rules and NodePort routing
 ├── scripts/
 │   ├── deploy.sh                        # One-click deployment script
+│   ├── port_forward.sh                  # Port-forwarding helper script
 │   ├── test_api.py                      # Automated test suite
 │   ├── load_test_autoscale.py           # Concurrency autoscaling load tester
 │   └── cleanup.sh                       # Teardown script
@@ -116,7 +117,7 @@ flowchart TD
 
 ---
 
-## 🚀 Quickstart & Deployment
+## Quickstart & Deployment
 
 ### 1. Prerequisites
 - **Docker Desktop on Windows** with **Kubernetes enabled** (2 worker nodes configured).
@@ -143,19 +144,19 @@ ansible-playbook -i inventory.ini playbook.yml
 
 ---
 
-## 🌐 Web Portal & Service URLs
+## Web Portal & Service URLs
 
 Once deployed, access the services via Ingress or direct NodePorts on Docker Desktop:
 
 | Service | Ingress URL | Direct NodePort URL | Default Credentials |
 | :--- | :--- | :--- | :--- |
-| **Token Portal & Web UI** | `http://localhost/` | `http://localhost:30080` | Use any user below |
-| **Keycloak Admin Console** | `http://localhost/auth` | `http://localhost:30090/auth` | `admin` / `KeycloakMasterAdmin2026!` |
+| **Token Portal & Web UI** | `http://localhost/` | `http://localhost:30080` (or `http://localhost:8000`) | Use any user below |
+| **Keycloak Admin Console** | `http://localhost/auth` | `http://localhost:30090/auth` (or `http://localhost:8080/auth`) | `admin` / `KeycloakMasterAdmin2026!` |
 | **OpenAI API Gateway** | `http://localhost/v1` | `http://localhost:30080/v1` | `Bearer <API_KEY>` |
 
 ---
 
-## 🔑 Pre-Configured Users & Initial Balances
+## Pre-Configured Users & Initial Balances
 
 | Username | Password | Role | Initial Tokens | Pre-Seeded API Key |
 | :--- | :--- | :--- | :--- | :--- |
@@ -166,11 +167,11 @@ Once deployed, access the services via Ingress or direct NodePorts on Docker Des
 
 ---
 
-## 💻 Making OpenAI API Requests
+## Making OpenAI API Requests
 
 ### 1. cURL
 ```bash
-curl -X POST http://localhost:30080/v1/chat/completions \
+curl -X POST http://localhost:8000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer sk-user1-secret-key-2026" \
   -d '{
@@ -188,7 +189,7 @@ curl -X POST http://localhost:30080/v1/chat/completions \
 from openai import OpenAI
 
 client = OpenAI(
-    base_url="http://localhost:30080/v1",
+    base_url="http://localhost:8000/v1",
     api_key="sk-user1-secret-key-2026"
 )
 
@@ -209,7 +210,7 @@ print(f"Total tokens used: {response.usage.total_tokens}")
 import OpenAI from 'openai';
 
 const openai = new OpenAI({
-  baseURL: 'http://localhost:30080/v1',
+  baseURL: 'http://localhost:8000/v1',
   apiKey: 'sk-user1-secret-key-2026',
 });
 
@@ -225,12 +226,12 @@ main();
 
 ---
 
-## 🧪 Testing & Autoscaling Verification
+## Testing & Autoscaling Verification
 
 ### 1. Automated Functional Test
 Verify health, token deduction, and admin operations:
 ```bash
-python3 scripts/test_api.py http://localhost:30080
+python3 scripts/test_api.py http://localhost:8000
 ```
 
 ### 2. Concurrency Autoscaling Demonstration (1 to 6 Pods)
@@ -243,14 +244,14 @@ kubectl get hpa,pods -n llm-platform -w
 
 2. In Terminal 2, launch concurrent requests:
 ```bash
-python3 scripts/load_test_autoscale.py http://localhost:30080
+python3 scripts/load_test_autoscale.py http://localhost:8000
 ```
 
 You will observe the HPA detect the load on Pod 1 and scale the deployment to 2, 3, up to 6 pods across the 2 worker nodes!
 
 ---
 
-## 🧹 Teardown
+## Teardown
 
 To clean up all deployed platform resources:
 ```bash

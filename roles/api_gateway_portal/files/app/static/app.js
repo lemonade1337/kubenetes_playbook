@@ -143,8 +143,6 @@ function clearChatHistory() {
             </div>
         `;
     }
-    const starters = document.getElementById('chat-quick-starters');
-    if (starters) starters.classList.remove('hidden');
     showToast('Conversation cleared.');
 }
 
@@ -202,10 +200,6 @@ function appendUserMessage(text) {
 
     container.insertAdjacentHTML('beforeend', msgHtml);
     container.scrollTop = container.scrollHeight;
-
-    // Hide quick starters after first message
-    const starters = document.getElementById('chat-quick-starters');
-    if (starters) starters.classList.add('hidden');
 }
 
 function appendAssistantPlaceholder() {
