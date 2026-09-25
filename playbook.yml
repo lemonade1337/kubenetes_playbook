@@ -16,6 +16,9 @@
     - role: keycloak
       tags: [auth, keycloak]
 
+    - role: observability
+      tags: [observability, monitoring, tracing, prometheus, grafana, jaeger]
+
     - role: qwen_llm
       tags: [llm, qwen, inference]
 

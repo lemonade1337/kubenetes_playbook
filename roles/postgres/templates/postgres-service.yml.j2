@@ -11,5 +11,8 @@ spec:
   - port: {{ postgres_port }}
     targetPort: {{ postgres_port }}
     name: postgres
+  - port: 9187
+    targetPort: 9187
+    name: metrics
   selector:
     app: postgres

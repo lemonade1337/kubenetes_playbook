@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: {{ k8s_namespace }}
+  labels:
+    app: prometheus
+    app.kubernetes.io/name: prometheus
+    app.kubernetes.io/part-of: qwen-ai-platform
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 10s
+      scrape_timeout: 8s
+      evaluation_interval: 10s
+
+    scrape_configs:
+      - job_name: 'prometheus'
+        static_configs:
+          - targets: ['localhost:9090']
+
+      - job_name: 'postgres'
+        metrics_path: /metrics
+        static_configs:
+          - targets: ['{{ postgres_service_name }}:9187']
+
+      - job_name: 'keycloak'
+        metrics_path: '{{ keycloak_http_relative_path }}/metrics'
+        static_configs:
+          - targets: ['{{ keycloak_service_name }}:{{ keycloak_port }}']
+
+      - job_name: 'api-gateway'
+        metrics_path: /metrics
+        static_configs:
+          - targets: ['{{ gateway_service_name }}:{{ gateway_port }}']

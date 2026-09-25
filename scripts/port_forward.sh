@@ -7,9 +7,12 @@ NAMESPACE="llm-platform"
 echo "==================================================================="
 echo "🌐 Starting Port Forwarding for Qwen 2.5 3B AI Platform"
 echo "==================================================================="
-echo "• Web Portal & Chat: http://localhost:8000  (or http://localhost:30080)"
-echo "• Keycloak Console:  http://localhost:8080/auth (or http://localhost:30090/auth)"
-echo "• Qwen LLM Engine:   http://localhost:11434"
+echo "• Web Portal & Chat:  http://localhost:8000  (or http://localhost:30080)"
+echo "• Keycloak Console:   http://localhost:8080/auth (or http://localhost:30090/auth)"
+echo "• Qwen LLM Engine:    http://localhost:11434"
+echo "• Grafana Dashboards: http://localhost:3000  (or http://localhost:30085)"
+echo "• Prometheus Metrics: http://localhost:9090  (or http://localhost:30091)"
+echo "• Jaeger Tracing UI:  http://localhost:16686 (or http://localhost:30086)"
 echo "==================================================================="
 echo "Press Ctrl+C to stop port forwarding."
 
@@ -23,6 +26,15 @@ PID_KC=$!
 kubectl port-forward -n "$NAMESPACE" svc/qwen-llm-service 11434:11434 30100:11434 &
 PID_QW=$!
 
-trap "kill $PID_GW $PID_KC $PID_QW 2>/dev/null; exit" SIGINT SIGTERM
+kubectl port-forward -n "$NAMESPACE" svc/grafana-service 3000:3000 30085:3000 &
+PID_GRAF=$!
+
+kubectl port-forward -n "$NAMESPACE" svc/prometheus-service 9090:9090 30091:9090 &
+PID_PROM=$!
+
+kubectl port-forward -n "$NAMESPACE" svc/jaeger-service 16686:16686 30086:16686 &
+PID_JAEG=$!
+
+trap "kill $PID_GW $PID_KC $PID_QW $PID_GRAF $PID_PROM $PID_JAEG 2>/dev/null; exit" SIGINT SIGTERM
 
 wait

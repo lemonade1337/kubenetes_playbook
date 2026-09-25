@@ -86,6 +86,44 @@ spec:
           mountPath: /var/lib/postgresql/data
         - name: init-scripts
           mountPath: /docker-entrypoint-initdb.d
+      - name: postgres-exporter
+        image: prometheuscommunity/postgres-exporter:v0.15.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9187
+          name: metrics
+        env:
+        - name: DATA_SOURCE_URI
+          value: "127.0.0.1:{{ postgres_port }}/{{ postgres_db_name }}?sslmode=disable"
+        - name: DATA_SOURCE_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: POSTGRES_USER
+        - name: DATA_SOURCE_PASS
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: POSTGRES_PASSWORD
+        resources:
+          requests:
+            cpu: "50m"
+            memory: "64Mi"
+          limits:
+            cpu: "200m"
+            memory: "128Mi"
+        readinessProbe:
+          httpGet:
+            path: /metrics
+            port: 9187
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /metrics
+            port: 9187
+          initialDelaySeconds: 15
+          periodSeconds: 10
       volumes:
       - name: init-scripts
         configMap:

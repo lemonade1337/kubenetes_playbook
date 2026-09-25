@@ -87,6 +87,11 @@ flowchart TD
    - **Live Token Metering**: Real-time atomic token deduction in PostgreSQL per request and immediate updates to balance cards.
    - **Admin Console**: View all user balances, grant extra tokens (e.g. +50,000) to any user, configure monthly recurring quotas, and reset balances.
 
+5. **Complete Observability Stack (Prometheus, Grafana, Jaeger)**:
+   - **Prometheus (1 Pod)**: Automatically scrapes metrics from PostgreSQL (via postgres-exporter sidecar on port 9187), Keycloak (built-in metrics at `/auth/metrics`), and API Gateway (`/metrics`).
+   - **Jaeger Distributed Tracing (1 Pod)**: Integrated into the API Gateway via OpenTelemetry (FastAPI, HTTPX outbound client, and SQLAlchemy engine), providing distributed trace graphs with token counts, user metadata, and backend latencies.
+   - **Grafana Visualization (1 Pod)**: Pre-provisioned with Prometheus & Jaeger data sources and auto-loaded dashboards for Platform Overview, PostgreSQL Performance, and Keycloak Auth metrics.
+
 ---
 
 ## Repository Structure
@@ -101,10 +106,11 @@ flowchart TD
 │   └── all.yml                          # Global configuration variables
 ├── roles/
 │   ├── prerequisites/                   # Namespace and Metrics Server
-│   ├── postgres/                        # PostgreSQL HA StatefulSet (2 replicas)
+│   ├── postgres/                        # PostgreSQL HA StatefulSet (2 replicas + exporter)
 │   ├── keycloak/                        # Keycloak HA Server (2 replicas)
+│   ├── observability/                   # Prometheus, Grafana, & Jaeger Tracing (1 pod each)
 │   ├── qwen_llm/                        # Qwen 2.5 3B Service & HPA (1 to 6 replicas)
-│   ├── api_gateway_portal/              # FastAPI Portal, Token Metering, & UI (2 replicas)
+│   ├── api_gateway_portal/              # FastAPI Portal, Token Metering, UI, & Tracing (2 replicas)
 │   └── ingress/                         # Ingress rules and NodePort routing
 ├── scripts/
 │   ├── deploy.sh                        # One-click deployment script
@@ -153,6 +159,9 @@ Once deployed, access the services via Ingress or direct NodePorts on Docker Des
 | **Token Portal & Web UI** | `http://localhost/` | `http://localhost:30080` (or `http://localhost:8000`) | Use any user below |
 | **Keycloak Admin Console** | `http://localhost/auth` | `http://localhost:30090/auth` (or `http://localhost:8080/auth`) | `admin` / `KeycloakMasterAdmin2026!` |
 | **OpenAI API Gateway** | `http://localhost/v1` | `http://localhost:30080/v1` | `Bearer <API_KEY>` |
+| **Grafana Dashboards** | `http://localhost:30085` | `http://localhost:30085` (or `http://localhost:3000`) | `admin` / `GrafanaMasterAdmin2026!` (or Anonymous Admin) |
+| **Prometheus Metrics** | `http://localhost:30091` | `http://localhost:30091` (or `http://localhost:9090`) | N/A |
+| **Jaeger Tracing UI** | `http://localhost:30086` | `http://localhost:30086` (or `http://localhost:16686`) | N/A |
 
 ---
 

@@ -21,6 +21,8 @@ data:
 {{ lookup('file', role_path + '/files/app/auth.py') | indent(4, true) }}
   proxy.py: |
 {{ lookup('file', role_path + '/files/app/proxy.py') | indent(4, true) }}
+  tracing.py: |
+{{ lookup('file', role_path + '/files/app/tracing.py') | indent(4, true) }}
 ---
 apiVersion: v1
 kind: ConfigMap

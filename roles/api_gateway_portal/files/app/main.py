@@ -26,6 +26,7 @@ from proxy import (
     validate_api_key_and_get_user, proxy_chat_completion,
     get_active_requests_count, TARGET_MODEL, QWEN_BACKEND_URL
 )
+from tracing import init_tracing
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 logger = logging.getLogger("gateway.main")
@@ -45,6 +46,9 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan
 )
+
+# Initialize OpenTelemetry distributed tracing to Jaeger
+init_tracing(app, engine)
 
 # Static and Templates
 app.mount("/static", StaticFiles(directory="static"), name="static")

@@ -9,6 +9,7 @@ from fastapi import Request, HTTPException, status
 from fastapi.responses import StreamingResponse, JSONResponse
 from sqlalchemy.orm import Session
 from models import User, UserBalance, ApiKey, UsageLog
+from tracing import get_current_span
 
 logger = logging.getLogger("gateway.proxy")
 
@@ -116,6 +117,13 @@ async def proxy_chat_completion(
     backend_url = f"{QWEN_BACKEND_URL}/v1/chat/completions"
 
     await increment_active_requests()
+    span = get_current_span()
+    if span and hasattr(span, "is_recording") and span.is_recording():
+        span.set_attribute("llm.user_id", user.id)
+        span.set_attribute("llm.username", user.username)
+        span.set_attribute("llm.model", TARGET_MODEL)
+        span.set_attribute("llm.stream", stream)
+
     try:
         timeout = httpx.Timeout(connect=10.0, read=300.0, write=10.0, pool=10.0)
         async with httpx.AsyncClient(timeout=timeout) as client:
@@ -144,6 +152,11 @@ async def proxy_chat_completion(
                         "total_tokens": total_tokens
                     }
 
+                if span and hasattr(span, "is_recording") and span.is_recording():
+                    span.set_attribute("llm.prompt_tokens", prompt_tokens)
+                    span.set_attribute("llm.completion_tokens", completion_tokens)
+                    span.set_attribute("llm.total_tokens", total_tokens)
+
                 deduct_user_tokens(db, user.id, prompt_tokens, completion_tokens, TARGET_MODEL, "/v1/chat/completions")
                 return JSONResponse(content=data)
 
@@ -161,6 +174,11 @@ async def proxy_chat_completion(
                     finally:
                         completion_tokens = max(1, token_count // 3)
                         prompt_tokens = max(1, prompt_len)
+                        total_tokens = prompt_tokens + completion_tokens
+                        if span and hasattr(span, "is_recording") and span.is_recording():
+                            span.set_attribute("llm.prompt_tokens", prompt_tokens)
+                            span.set_attribute("llm.completion_tokens", completion_tokens)
+                            span.set_attribute("llm.total_tokens", total_tokens)
                         deduct_user_tokens(db, user.id, prompt_tokens, completion_tokens, TARGET_MODEL, "/v1/chat/completions")
 
                 return StreamingResponse(stream_generator(), media_type="text/event-stream")
