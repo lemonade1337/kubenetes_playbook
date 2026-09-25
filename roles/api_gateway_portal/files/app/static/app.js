@@ -266,14 +266,6 @@ function updateAssistantMessage(placeholderId, content, usage) {
     const container = document.getElementById('chat-messages-container');
     container.scrollTop = container.scrollHeight;
 }
-                </div>
-            </div>
-        </div>
-    `;
-
-    const container = document.getElementById('chat-messages-container');
-    container.scrollTop = container.scrollHeight;
-}
 
 function updateAssistantError(placeholderId, errorMsg) {
     const placeholder = document.getElementById(placeholderId);

@@ -231,6 +231,18 @@ flowchart TD
    ansible-playbook -i inventory.ini playbook.yml -e @vars/macos.yml
    ```
 
+4. **Access the services (Start Port-Forwarding)**:
+   In local development, run the port-forwarding helper script to access all services on `localhost`:
+   ```bash
+   ./scripts/port_forward.sh
+   ```
+   - **Web Portal & Chat**: `http://localhost:8000` (or `http://localhost:30080`)
+   - **Keycloak Console**: `http://localhost:8080/auth` (or `http://localhost:30090/auth`)
+   - **Grafana Dashboards**: `http://localhost:3000` (or `http://localhost:30085`)
+   - **Prometheus Metrics**: `http://localhost:9090` (or `http://localhost:30091`)
+   - **Jaeger UI**: `http://localhost:16686` (or `http://localhost:30086`)
+   - **Qwen LLM Engine**: `http://localhost:11434` (or `http://localhost:30100`)
+
 ---
 
 ### 2. Linux Deployment (k3s, MicroK8s, Minikube, Kind, Bare-Metal)
@@ -268,6 +280,18 @@ flowchart TD
    ansible-playbook -i inventory.ini playbook.yml -e @vars/linux.yml
    ```
 
+4. **Access the services (Start Port-Forwarding)**:
+   Run the port-forwarding helper script to access all services on `localhost`:
+   ```bash
+   ./scripts/port_forward.sh
+   ```
+   - **Web Portal & Chat**: `http://localhost:8000` (or `http://localhost:30080`)
+   - **Keycloak Console**: `http://localhost:8080/auth` (or `http://localhost:30090/auth`)
+   - **Grafana Dashboards**: `http://localhost:3000` (or `http://localhost:30085`)
+   - **Prometheus Metrics**: `http://localhost:9090` (or `http://localhost:30091`)
+   - **Jaeger UI**: `http://localhost:16686` (or `http://localhost:30086`)
+   - **Qwen LLM Engine**: `http://localhost:11434` (or `http://localhost:30100`)
+
 ---
 
 ### 3. Windows (Docker Desktop / WSL2)
@@ -279,6 +303,17 @@ flowchart TD
    # Or:
    ansible-playbook -i inventory.ini playbook.yml
    ```
+3. **Access the services (Start Port-Forwarding)**:
+   Run the port-forwarding helper script to access all services on `localhost`:
+   ```bash
+   ./scripts/port_forward.sh
+   ```
+   - **Web Portal & Chat**: `http://localhost:8000` (or `http://localhost:30080`)
+   - **Keycloak Console**: `http://localhost:8080/auth` (or `http://localhost:30090/auth`)
+   - **Grafana Dashboards**: `http://localhost:3000` (or `http://localhost:30085`)
+   - **Prometheus Metrics**: `http://localhost:9090` (or `http://localhost:30091`)
+   - **Jaeger UI**: `http://localhost:16686` (or `http://localhost:30086`)
+   - **Qwen LLM Engine**: `http://localhost:11434` (or `http://localhost:30100`)
 
 ---
 

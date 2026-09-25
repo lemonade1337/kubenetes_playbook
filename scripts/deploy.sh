@@ -60,5 +60,7 @@ done
 ansible-playbook -i inventory.ini playbook.yml "${EXTRA_ARGS[@]}"
 
 echo "==================================================================="
-echo "✅ Deployment Complete! Visit http://localhost:30080 or http://localhost/"
+echo "✅ Deployment Complete!"
+echo "👉 Run './scripts/port_forward.sh' to access the services on localhost"
+echo "🌐 Web Portal & Chat: http://localhost:8000"
 echo "==================================================================="

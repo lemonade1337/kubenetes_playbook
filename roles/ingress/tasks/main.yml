@@ -28,4 +28,6 @@
       - "  User1: username: user1 / password: {{ initial_users[1].password }} (Key: sk-user1-secret-key-2026)"
       - "  User2: username: user2 / password: {{ initial_users[2].password }} (Key: sk-user2-secret-key-2026)"
       - "  User3: username: user3 / password: {{ initial_users[3].password }} (Key: sk-user3-secret-key-2026)"
+      - "--------------------------------------------------------------------------"
+      - "💡 Note: For local development, run './scripts/port_forward.sh' to access services on localhost."
       - "=========================================================================="

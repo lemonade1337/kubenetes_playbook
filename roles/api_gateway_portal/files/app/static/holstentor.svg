@@ -1,79 +1,99 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
-  <!-- Holstentor Lübeck Blue & White Logo -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="100%" height="100%" fill="none">
+  <!-- Holstentor Lübeck - Blue & White Logo -->
   <defs>
-    <linearGradient id="htBgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient id="htBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1d4ed8" />
+      <stop offset="60%" stop-color="#1e40af" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <linearGradient id="htBlueAccent" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" stop-color="#2563eb" />
-      <stop offset="50%" stop-color="#1d4ed8" />
-      <stop offset="100%" stop-color="#1e3a8a" />
+      <stop offset="50%" stop-color="#3b82f6" />
+      <stop offset="100%" stop-color="#2563eb" />
     </linearGradient>
-    <linearGradient id="htWhiteGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+    <linearGradient id="towerGradLeft" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" stop-color="#ffffff" />
-      <stop offset="100%" stop-color="#f0f7ff" />
+      <stop offset="70%" stop-color="#f8fafc" />
+      <stop offset="100%" stop-color="#e2e8f0" />
     </linearGradient>
-    <filter id="htShadow" x="-10%" y="-10%" width="120%" height="120%" filterUnits="userSpaceOnUse">
-      <feDropShadow dx="0" dy="1" stdDeviation="1" flood-color="#000000" flood-opacity="0.2"/>
-    </filter>
+    <linearGradient id="towerGradRight" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#e2e8f0" />
+      <stop offset="30%" stop-color="#f8fafc" />
+      <stop offset="100%" stop-color="#ffffff" />
+    </linearGradient>
   </defs>
 
-  <!-- Base Plinth -->
-  <rect x="8" y="87" width="84" height="4" rx="2" fill="url(#htWhiteGrad)" filter="url(#htShadow)" />
+  <!-- Circular Badge Background -->
+  <circle cx="60" cy="60" r="56" fill="url(#htBg)" stroke="#60a5fa" stroke-width="2.5" />
+  <circle cx="60" cy="60" r="52" fill="none" stroke="#3b82f6" stroke-width="1" stroke-dasharray="3,3" opacity="0.6" />
 
-  <!-- Left Round Tower Body -->
-  <path d="M 15 46 C 14 60 14 74 16 87 L 38 87 C 39 74 38 60 37 46 Z" fill="url(#htWhiteGrad)" />
-  <!-- Right Round Tower Body -->
-  <path d="M 63 46 C 62 60 61 74 62 87 L 84 87 C 86 74 86 60 85 46 Z" fill="url(#htWhiteGrad)" />
+  <!-- Ground / Base -->
+  <path d="M 18 96 L 102 96" stroke="#ffffff" stroke-width="3" stroke-linecap="round" />
 
-  <!-- Center Gatehouse Body -->
-  <rect x="34" y="42" width="32" height="45" fill="url(#htWhiteGrad)" />
+  <!-- === MAIN BUILDING SILHOUETTE === -->
+  <!-- Left Round Tower -->
+  <path d="M 22 52 Q 20 74 23 96 L 47 96 Q 48 74 46 52 Z" fill="url(#towerGradLeft)" />
 
-  <!-- Center Stepped Gable & Pediment -->
-  <path d="M 35 42 L 35 34 L 41 34 L 41 27 L 47 27 L 47 21 L 53 21 L 53 27 L 59 27 L 59 34 L 65 34 L 65 42 Z" fill="url(#htWhiteGrad)" />
-  <circle cx="50" cy="17" r="2.5" fill="#ffffff" />
-  <path d="M 50 14 L 50 21" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" />
+  <!-- Right Round Tower -->
+  <path d="M 74 52 Q 72 74 73 96 L 97 96 Q 100 74 98 52 Z" fill="url(#towerGradRight)" />
+
+  <!-- Central Gatehouse Connecting Tract -->
+  <path d="M 44 48 L 76 48 L 76 96 L 44 96 Z" fill="#ffffff" />
+
+  <!-- Center Stepped Gable / Pediment with Terraces -->
+  <path d="M 46 48 L 46 39 L 52 39 L 52 31 L 57 31 L 57 24 L 63 24 L 63 31 L 68 31 L 68 39 L 74 39 L 74 48 Z" fill="#ffffff" />
 
   <!-- Left Conical Roof -->
-  <path d="M 26 13 L 11 46 C 18 48 34 48 41 46 Z" fill="url(#htWhiteGrad)" filter="url(#htShadow)" />
-  <!-- Left Spire -->
-  <path d="M 26 6 L 26 13 M 24 8 L 28 8" stroke="#ffffff" stroke-width="2" stroke-linecap="round" />
-  <circle cx="26" cy="5" r="2.5" fill="#ffffff" />
+  <path d="M 34.5 16 L 18 52 L 51 52 Z" fill="#ffffff" />
+  <!-- Left Spire & Ball -->
+  <line x1="34.5" y1="9" x2="34.5" y2="16" stroke="#ffffff" stroke-width="2" stroke-linecap="round" />
+  <circle cx="34.5" cy="8" r="2.5" fill="#93c5fd" stroke="#ffffff" stroke-width="1" />
 
   <!-- Right Conical Roof -->
-  <path d="M 74 13 L 59 46 C 66 48 82 48 89 46 Z" fill="url(#htWhiteGrad)" filter="url(#htShadow)" />
-  <!-- Right Spire -->
-  <path d="M 74 6 L 74 13 M 72 8 L 76 8" stroke="#ffffff" stroke-width="2" stroke-linecap="round" />
-  <circle cx="74" cy="5" r="2.5" fill="#ffffff" />
+  <path d="M 85.5 16 L 69 52 L 102 52 Z" fill="#ffffff" />
+  <!-- Right Spire & Ball -->
+  <line x1="85.5" y1="9" x2="85.5" y2="16" stroke="#ffffff" stroke-width="2" stroke-linecap="round" />
+  <circle cx="85.5" cy="8" r="2.5" fill="#93c5fd" stroke="#ffffff" stroke-width="1" />
 
-  <!-- Architectural Details in Blue -->
-  <!-- Horizontal Terracotta Friezes -->
-  <path d="M 14 55 L 86 55" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round" />
-  <path d="M 15 69 L 85 69" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round" />
-  <path d="M 35 34 L 65 34" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round" />
-  <path d="M 41 27 L 59 27" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round" />
+  <!-- Center Roof Ridge Spire -->
+  <line x1="60" y1="18" x2="60" y2="24" stroke="#ffffff" stroke-width="2" stroke-linecap="round" />
+  <circle cx="60" cy="17" r="2" fill="#93c5fd" stroke="#ffffff" stroke-width="1" />
 
-  <!-- Left Tower Windows (Arched Loops) -->
-  <rect x="19" y="59" width="3.5" height="5.5" rx="1.75" fill="#1d4ed8" />
-  <rect x="25" y="59" width="3.5" height="5.5" rx="1.75" fill="#1d4ed8" />
-  <rect x="31" y="59" width="3.5" height="5.5" rx="1.75" fill="#1d4ed8" />
-  <rect x="19" y="74" width="3.5" height="5.5" rx="1.75" fill="#1d4ed8" />
-  <rect x="25" y="74" width="3.5" height="5.5" rx="1.75" fill="#1d4ed8" />
-  <rect x="31" y="74" width="3.5" height="5.5" rx="1.75" fill="#1d4ed8" />
+  <!-- === ARCHITECTURAL BLUE DETAILS & FRIEZES === -->
+  <!-- Horizontal Terracotta Frieze Bands -->
+  <path d="M 21 62 L 99 62" stroke="#2563eb" stroke-width="2" stroke-linecap="round" />
+  <path d="M 22 76 L 98 76" stroke="#2563eb" stroke-width="2" stroke-linecap="round" />
+  <path d="M 46 39 L 74 39" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round" />
+  <path d="M 52 31 L 68 31" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round" />
 
-  <!-- Right Tower Windows -->
-  <rect x="65" y="59" width="3.5" height="5.5" rx="1.75" fill="#1d4ed8" />
-  <rect x="71" y="59" width="3.5" height="5.5" rx="1.75" fill="#1d4ed8" />
-  <rect x="77" y="59" width="3.5" height="5.5" rx="1.75" fill="#1d4ed8" />
-  <rect x="65" y="74" width="3.5" height="5.5" rx="1.75" fill="#1d4ed8" />
-  <rect x="71" y="74" width="3.5" height="5.5" rx="1.75" fill="#1d4ed8" />
-  <rect x="77" y="74" width="3.5" height="5.5" rx="1.75" fill="#1d4ed8" />
+  <!-- Left Tower Windows (Upper Row) -->
+  <rect x="25" y="66" width="4" height="6.5" rx="2" fill="#1e40af" />
+  <rect x="32" y="66" width="4" height="6.5" rx="2" fill="#1e40af" />
+  <rect x="39" y="66" width="4" height="6.5" rx="2" fill="#1e40af" />
 
-  <!-- Center Gable Rosette & Windows -->
-  <circle cx="50" cy="30.5" r="2.5" fill="#1d4ed8" />
-  <rect x="43" y="47" width="4" height="5.5" rx="2" fill="#1d4ed8" />
-  <rect x="53" y="47" width="4" height="5.5" rx="2" fill="#1d4ed8" />
-  <rect x="43" y="59" width="4" height="5.5" rx="2" fill="#1d4ed8" />
-  <rect x="53" y="59" width="4" height="5.5" rx="2" fill="#1d4ed8" />
+  <!-- Left Tower Windows (Lower Row) -->
+  <rect x="26" y="81" width="4" height="6.5" rx="2" fill="#1e40af" />
+  <rect x="33" y="81" width="4" height="6.5" rx="2" fill="#1e40af" />
+  <rect x="40" y="81" width="4" height="6.5" rx="2" fill="#1e40af" />
 
-  <!-- Central Great Portal / Archway -->
-  <path d="M 42 87 L 42 74 C 42 66 58 66 58 74 L 58 87 Z" fill="#1e3a8a" />
-  <path d="M 40 87 L 40 73 C 40 63 60 63 60 73 L 60 87" stroke="#60a5fa" stroke-width="1.5" fill="none" />
+  <!-- Right Tower Windows (Upper Row) -->
+  <rect x="76" y="66" width="4" height="6.5" rx="2" fill="#1e40af" />
+  <rect x="83" y="66" width="4" height="6.5" rx="2" fill="#1e40af" />
+  <rect x="90" y="66" width="4" height="6.5" rx="2" fill="#1e40af" />
+
+  <!-- Right Tower Windows (Lower Row) -->
+  <rect x="75" y="81" width="4" height="6.5" rx="2" fill="#1e40af" />
+  <rect x="82" y="81" width="4" height="6.5" rx="2" fill="#1e40af" />
+  <rect x="89" y="81" width="4" height="6.5" rx="2" fill="#1e40af" />
+
+  <!-- Center Gable Windows & Rosette -->
+  <circle cx="60" cy="35" r="2.5" fill="#1e40af" />
+  <rect x="52" y="52" width="4.5" height="7" rx="2.25" fill="#1e40af" />
+  <rect x="63.5" y="52" width="4.5" height="7" rx="2.25" fill="#1e40af" />
+  <rect x="52" y="66" width="4.5" height="7" rx="2.25" fill="#1e40af" />
+  <rect x="63.5" y="66" width="4.5" height="7" rx="2.25" fill="#1e40af" />
+
+  <!-- Central Great Gate Portal (Torbogen) -->
+  <path d="M 51 96 L 51 82 C 51 74 69 74 69 82 L 69 96 Z" fill="#0f172a" />
+  <path d="M 49 96 L 49 81 C 49 71 71 71 71 81 L 71 96" stroke="#3b82f6" stroke-width="1.8" fill="none" />
 </svg>
