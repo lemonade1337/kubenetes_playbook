@@ -5,7 +5,8 @@
 k8s_namespace: "llm-platform"
 k8s_kubeconfig: "{{ lookup('env', 'KUBECONFIG') | default('~/.kube/config', true) }}"
 k8s_context: "{{ lookup('env', 'K8S_CONTEXT') | default('', true) }}"
-k8s_storage_class: "hostpath" # Default for Docker Desktop on Windows, or standard
+k8s_storage_class: "" # Leave empty for cluster default, or set to: hostpath (macOS/Docker Desktop), local-path (k3s), gp3 (AWS EKS), managed-csi (Azure AKS)
+deploy_metrics_server: true # Set to false if Metrics Server is already managed/installed on the cluster (e.g. AWS EKS / Azure AKS)
 
 # ==============================================================================
 # Database Configuration (PostgreSQL HA / Redundant 2 Replicas)
@@ -72,7 +73,10 @@ initial_users:
 # Qwen 2.5 3B LLM Inference Service Configuration
 # Starts at 1 replica, scales dynamically up to 6 replicas when in use
 # ==============================================================================
+qwen_image: "qwen-llm:2.5-3b"
 qwen_model_name: "qwen2.5:3b"
+qwen_build_local: true # Set to true to build image locally with Docker; set to false if using pre-pushed image from ECR/ACR/DockerHub
+qwen_node_import_enabled: true # Automatically import image into local container nodes (Kind / Docker Desktop / k3d)
 qwen_min_replicas: 1
 qwen_max_replicas: 6
 qwen_hpa_cpu_percent: 50 # When active inference occurs, CPU load triggers autoscaling

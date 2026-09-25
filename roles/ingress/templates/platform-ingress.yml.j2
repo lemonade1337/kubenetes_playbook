@@ -11,8 +11,17 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-body-size: "128m"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+{% if ingress_annotations is defined and ingress_annotations %}
+{% for key, val in ingress_annotations.items() %}
+    {{ key }}: "{{ val }}"
+{% endfor %}
+{% endif %}
 spec:
+{% if ingress_class_name is defined and ingress_class_name != "" %}
+  ingressClassName: {{ ingress_class_name }}
+{% endif %}
   rules:
+{% if ingress_host_portal is defined and ingress_host_portal != "" and ingress_host_portal != "*" %}
   - host: {{ ingress_host_portal }}
     http:
       paths:
@@ -30,3 +39,21 @@ spec:
             name: {{ gateway_service_name }}
             port:
               number: {{ gateway_port }}
+{% else %}
+  - http:
+      paths:
+      - path: /auth
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ keycloak_service_name }}
+            port:
+              number: {{ keycloak_port }}
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ gateway_service_name }}
+            port:
+              number: {{ gateway_port }}
+{% endif %}

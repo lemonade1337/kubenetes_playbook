@@ -21,8 +21,43 @@ if [ ! -f "$HOME/.kube/config" ] && [ -z "$KUBECONFIG" ]; then
     fi
 fi
 
+EXTRA_ARGS=()
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --env)
+            ENV_NAME="$2"
+            shift 2
+            case "$ENV_NAME" in
+                macos|mac)
+                    EXTRA_ARGS+=("-e" "@vars/macos.yml")
+                    ;;
+                linux)
+                    EXTRA_ARGS+=("-e" "@vars/linux.yml")
+                    ;;
+                aws|eks)
+                    EXTRA_ARGS+=("-e" "@vars/aws-eks.yml")
+                    ;;
+                azure|aks)
+                    EXTRA_ARGS+=("-e" "@vars/azure-aks.yml")
+                    ;;
+                *)
+                    if [ -f "vars/${ENV_NAME}.yml" ]; then
+                        EXTRA_ARGS+=("-e" "@vars/${ENV_NAME}.yml")
+                    else
+                        echo "⚠️  Warning: Unknown environment '$ENV_NAME'. Passing as-is."
+                    fi
+                    ;;
+            esac
+            ;;
+        *)
+            EXTRA_ARGS+=("$1")
+            shift
+            ;;
+    esac
+done
+
 # Run the playbook
-ansible-playbook -i inventory.ini playbook.yml "$@"
+ansible-playbook -i inventory.ini playbook.yml "${EXTRA_ARGS[@]}"
 
 echo "==================================================================="
 echo "✅ Deployment Complete! Visit http://localhost:30080 or http://localhost/"

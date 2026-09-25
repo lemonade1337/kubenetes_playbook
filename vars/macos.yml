@@ -1,0 +1,19 @@
+---
+# ==============================================================================
+# Environment Configuration: macOS (Docker Desktop, Minikube, Kind, OrbStack)
+# Usage: ansible-playbook -i inventory.ini playbook.yml -e @vars/macos.yml
+# ==============================================================================
+k8s_storage_class: "" # Uses default StorageClass ("hostpath", "standard", or dynamic)
+deploy_metrics_server: true
+
+# Local Docker build & Containerd import
+qwen_build_local: true
+qwen_node_import_enabled: true
+qwen_image: "qwen-llm:2.5-3b"
+
+# Local Ingress & Host Routing
+ingress_enabled: true
+ingress_class_name: "nginx"
+ingress_host_portal: "localhost"
+ingress_host_keycloak: "localhost"
+ingress_host_api: "localhost"

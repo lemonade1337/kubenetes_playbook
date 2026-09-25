@@ -1,4 +1,66 @@
 ---
+- name: Determine working Docker binary
+  ansible.builtin.shell: |
+    if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
+      echo "docker"
+    elif command -v docker.exe >/dev/null 2>&1 && docker.exe info >/dev/null 2>&1; then
+      echo "docker.exe"
+    elif command -v podman >/dev/null 2>&1; then
+      echo "podman"
+    else
+      echo "docker"
+    fi
+  register: docker_cmd_check
+  changed_when: false
+  when: qwen_build_local | default(true) | bool
+
+- name: Set Docker executable fact
+  ansible.builtin.set_fact:
+    docker_bin: "{{ docker_cmd_check.stdout.strip() if (docker_cmd_check is defined and docker_cmd_check.stdout is defined) else 'docker' }}"
+  when: qwen_build_local | default(true) | bool
+
+- name: Check if pre-baked Qwen LLM Docker image exists
+  ansible.builtin.command:
+    cmd: "{{ docker_bin }} image inspect {{ qwen_image }}"
+  register: qwen_image_inspect
+  failed_when: false
+  changed_when: false
+  when: qwen_build_local | default(true) | bool
+
+- name: Build pre-baked Qwen 2.5 3B Docker image (with pre-downloaded model)
+  ansible.builtin.command:
+    cmd: "{{ docker_bin }} build -t {{ qwen_image }} {{ role_path }}/files"
+  when:
+    - (qwen_build_local | default(true) | bool)
+    - (qwen_image_inspect.rc is defined and qwen_image_inspect.rc != 0)
+  register: qwen_build_result
+  changed_when: true
+
+- name: Get Kubernetes cluster nodes
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ k8s_kubeconfig | default(omit) }}"
+    context: "{{ k8s_context | default(omit) if k8s_context else omit }}"
+    kind: Node
+  register: k8s_nodes
+  when:
+    - (qwen_build_local | default(true) | bool)
+    - (qwen_node_import_enabled | default(true) | bool)
+
+- name: Ensure pre-baked Qwen image is loaded into all cluster nodes containerd
+  ansible.builtin.shell: |
+    if ! {{ docker_bin }} exec {{ item.metadata.name }} ctr -n k8s.io images list -q 2>/dev/null | grep -q '{{ qwen_image }}'; then
+      echo "Importing {{ qwen_image }} into node {{ item.metadata.name }}..."
+      {{ docker_bin }} save {{ qwen_image }} | {{ docker_bin }} exec -i {{ item.metadata.name }} ctr -n k8s.io images import -
+    fi
+  loop: "{{ k8s_nodes.resources | default([]) }}"
+  when:
+    - (qwen_build_local | default(true) | bool)
+    - (qwen_node_import_enabled | default(true) | bool)
+    - (k8s_nodes.resources is defined and (k8s_nodes.resources | length > 0))
+  register: node_import_res
+  changed_when: "'Importing' in (node_import_res.stdout | default(''))"
+  ignore_errors: true
+
 - name: Deploy Qwen 2.5 3B Deployment (Starts with 1 replica)
   kubernetes.core.k8s:
     kubeconfig: "{{ k8s_kubeconfig | default(omit) }}"
@@ -32,6 +94,6 @@
     qwen_deploy.resources is defined and
     (qwen_deploy.resources | length > 0) and
     (qwen_deploy.resources[0].status.readyReplicas | default(0) >= 1)
-  retries: 40
-  delay: 15
+  retries: 30
+  delay: 5
   ignore_errors: true

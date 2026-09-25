@@ -134,6 +134,9 @@ spec:
       name: postgres-data
     spec:
       accessModes: [ "ReadWriteOnce" ]
+{% if k8s_storage_class is defined and k8s_storage_class != "" and k8s_storage_class != "default" %}
+      storageClassName: "{{ k8s_storage_class }}"
+{% endif %}
       resources:
         requests:
           storage: {{ postgres_storage_size }}

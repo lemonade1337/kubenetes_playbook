@@ -1,0 +1,19 @@
+---
+# ==============================================================================
+# Environment Configuration: Linux (k3s, MicroK8s, Minikube, Kind, Bare Metal)
+# Usage: ansible-playbook -i inventory.ini playbook.yml -e @vars/linux.yml
+# ==============================================================================
+k8s_storage_class: "" # Uses default StorageClass ("local-path", "microk8s-hostpath", "standard")
+deploy_metrics_server: true
+
+# Local Docker/Podman build & Containerd import
+qwen_build_local: true
+qwen_node_import_enabled: true
+qwen_image: "qwen-llm:2.5-3b"
+
+# Local Ingress & Host Routing
+ingress_enabled: true
+ingress_class_name: "nginx"
+ingress_host_portal: "localhost"
+ingress_host_keycloak: "localhost"
+ingress_host_api: "localhost"

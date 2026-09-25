@@ -1,0 +1,32 @@
+---
+# ==============================================================================
+# Environment Configuration: AWS EKS (Elastic Kubernetes Service)
+# Usage: ansible-playbook -i inventory.ini playbook.yml -e @vars/aws-eks.yml
+# ==============================================================================
+# Storage configuration for AWS EBS CSI driver
+k8s_storage_class: "gp3" # or "gp2"
+postgres_storage_size: "10Gi"
+qwen_storage_size: "20Gi"
+
+# Metrics Server (set to false if using EKS managed metrics-server addon)
+deploy_metrics_server: false
+
+# Container Image Configuration
+# Build and push qwen-llm:2.5-3b to AWS ECR, then specify the full image URI here:
+qwen_build_local: false
+qwen_node_import_enabled: false
+# qwen_image: "<aws_account_id>.dkr.ecr.<region>.amazonaws.com/qwen-llm:2.5-3b"
+qwen_image: "qwen-llm:2.5-3b"
+
+# Ingress Configuration (AWS Load Balancer Controller or NGINX Ingress)
+ingress_enabled: true
+ingress_class_name: "nginx" # or "alb"
+ingress_host_portal: "*" # or your custom DNS domain (e.g. "llm.yourdomain.com")
+ingress_host_keycloak: "*"
+ingress_host_api: "*"
+
+# AWS ALB annotations (uncomment if using AWS Load Balancer Controller with ingress_class_name: "alb")
+# ingress_annotations:
+#   alb.ingress.kubernetes.io/scheme: internet-facing
+#   alb.ingress.kubernetes.io/target-type: ip
+#   alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'

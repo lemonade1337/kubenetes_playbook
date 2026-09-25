@@ -1,6 +1,8 @@
 # High-Availability Qwen 2.5 3B Platform on Kubernetes
 
-A production-ready Ansible playbook and Kubernetes architecture designed for **Docker Desktop on Windows** (with 2 worker nodes). This platform deploys a scalable **Qwen 2.5 3B** LLM inference service, **Keycloak Authentication**, an **OpenAI-Compatible API Gateway**, and a **Token Management Web Portal**.
+A production-ready Ansible playbook and Kubernetes architecture for deploying a scalable **Qwen 2.5 3B** LLM inference service, **Keycloak Authentication**, an **OpenAI-Compatible API Gateway**, and a **Token Management Web Portal**.
+
+Supports deployment across **macOS**, **Linux**, **Windows (WSL2 / Docker Desktop)**, **AWS EKS**, and **Azure AKS**.
 
 ---
 
@@ -67,8 +69,8 @@ flowchart TD
    - Exposes standard **OpenAI-compatible endpoints** (`/v1/chat/completions`, `/v1/models`).
 
 2. **Full Redundancy & High Availability**:
-   - Deployed across **2 Kubernetes worker nodes**.
-   - **PostgreSQL Database**: Redundant 2-replica StatefulSet with persistent storage.
+   - Deployed across **2 Kubernetes worker nodes** (or single-node development environments).
+   - **PostgreSQL Database**: Redundant 2-replica StatefulSet with persistent storage and postgres-exporter metrics sidecar.
    - **Keycloak Server**: Redundant 2-replica deployment with pod anti-affinity.
    - **API Gateway & Web Portal**: Redundant 2-replica deployment with pod anti-affinity.
 
@@ -104,6 +106,11 @@ flowchart TD
 ├── site.yml                             # Playbook entrypoint alias
 ├── group_vars/
 │   └── all.yml                          # Global configuration variables
+├── vars/                                # Environment-specific variable overlays
+│   ├── macos.yml                        # Settings for macOS (Docker Desktop/Minikube/Kind)
+│   ├── linux.yml                        # Settings for Linux (k3s/MicroK8s/Minikube/Kind)
+│   ├── aws-eks.yml                      # Settings for AWS EKS (gp3 storage, ECR, ALB)
+│   └── azure-aks.yml                    # Settings for Azure AKS (managed-csi storage, ACR)
 ├── roles/
 │   ├── prerequisites/                   # Namespace and Metrics Server
 │   ├── postgres/                        # PostgreSQL HA StatefulSet (2 replicas + exporter)
@@ -113,7 +120,7 @@ flowchart TD
 │   ├── api_gateway_portal/              # FastAPI Portal, Token Metering, UI, & Tracing (2 replicas)
 │   └── ingress/                         # Ingress rules and NodePort routing
 ├── scripts/
-│   ├── deploy.sh                        # One-click deployment script
+│   ├── deploy.sh                        # One-click multi-environment deployment script
 │   ├── port_forward.sh                  # Port-forwarding helper script
 │   ├── test_api.py                      # Automated test suite
 │   ├── load_test_autoscale.py           # Concurrency autoscaling load tester
@@ -123,36 +130,212 @@ flowchart TD
 
 ---
 
-## Quickstart & Deployment
+## Deployment Guides (macOS, Linux, Windows, AWS, Azure)
 
-### 1. Prerequisites
-- **Docker Desktop on Windows** with **Kubernetes enabled** (2 worker nodes configured).
-- Python 3 with `ansible` and `kubernetes` packages installed.
+### General Prerequisites
+- **Python 3** (3.9+) with `ansible` and `kubernetes` packages installed:
+  ```bash
+  pip install ansible kubernetes
+  ansible-galaxy collection install kubernetes.core
+  ```
+- **kubectl** installed and authenticated with your target cluster (`kubectl get nodes`).
+- **Docker** or **Podman** installed (required for local image builds).
 
-Ensure your `KUBECONFIG` points to your Docker Desktop Kubernetes cluster:
-```bash
-# If running inside WSL2:
-export KUBECONFIG=/mnt/c/Users/<YourWindowsUser>/.kube/config
-# Or default:
-kubectl get nodes
-```
+---
 
-### 2. Deploy the Entire Platform
-Run the deployment script or execute Ansible directly:
+### 1. macOS Deployment (Docker Desktop, Minikube, Kind, OrbStack)
 
-```bash
-# Option A: One-click script
-./scripts/deploy.sh
+1. **Install tools via Homebrew**:
+   ```bash
+   brew install kubectl ansible helm
+   ```
 
-# Option B: Direct Ansible invocation
-ansible-playbook -i inventory.ini playbook.yml
-```
+2. **Start a Kubernetes cluster**:
+   - **Docker Desktop / OrbStack**: Enable Kubernetes in Settings.
+   - **Minikube**:
+     ```bash
+     minikube start --cpus=4 --memory=8192 --nodes=2
+     minikube addons enable ingress
+     minikube addons enable metrics-server
+     ```
+   - **Kind**:
+     ```bash
+     kind create cluster --config - <<EOF
+     kind: Cluster
+     apiVersion: kind.x-k8s.io/v1alpha4
+     nodes:
+     - role: control-plane
+     - role: worker
+     - role: worker
+     EOF
+     ```
+
+3. **Deploy the platform**:
+   ```bash
+   ./scripts/deploy.sh --env macos
+   # Or directly with Ansible:
+   ansible-playbook -i inventory.ini playbook.yml -e @vars/macos.yml
+   ```
+
+---
+
+### 2. Linux Deployment (k3s, MicroK8s, Minikube, Kind, Bare-Metal)
+
+1. **Install prerequisites (Ubuntu/Debian example)**:
+   ```bash
+   sudo apt-get update && sudo apt-get install -y docker.io python3-pip python3-venv
+   pip3 install ansible kubernetes
+   ansible-galaxy collection install kubernetes.core
+   ```
+
+2. **Set up cluster**:
+   - **k3s**:
+     ```bash
+     curl -sfL https://get.k3s.io | sh -
+     export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+     sudo chmod 644 /etc/rancher/k3s/k3s.yaml
+     ```
+   - **MicroK8s**:
+     ```bash
+     sudo snap install microk8s --classic
+     sudo microk8s enable dns storage ingress metrics-server
+     sudo snap alias microk8s.kubectl kubectl
+     microk8s config > ~/.kube/config
+     ```
+   - **Minikube / Kind**:
+     ```bash
+     minikube start --driver=docker --cpus=4 --memory=8192 --nodes=2
+     ```
+
+3. **Deploy the platform**:
+   ```bash
+   ./scripts/deploy.sh --env linux
+   # Or directly with Ansible:
+   ansible-playbook -i inventory.ini playbook.yml -e @vars/linux.yml
+   ```
+
+---
+
+### 3. Windows (Docker Desktop / WSL2)
+
+1. Ensure **Docker Desktop** is running with **Kubernetes enabled** (2 worker nodes configured if using multi-node Kind/Docker Desktop).
+2. From WSL2 or Windows bash:
+   ```bash
+   ./scripts/deploy.sh
+   # Or:
+   ansible-playbook -i inventory.ini playbook.yml
+   ```
+
+---
+
+### 4. AWS EKS Deployment (Amazon Web Services)
+
+1. **Prerequisites**:
+   - Install AWS CLI (`aws`) and `eksctl`.
+   - Configure AWS credentials: `aws configure`.
+
+2. **Create an EKS cluster with 2+ worker nodes**:
+   ```bash
+   eksctl create cluster \
+     --name qwen-platform \
+     --region us-east-1 \
+     --nodegroup-name standard-workers \
+     --node-type t3.xlarge \
+     --nodes 2 \
+     --nodes-min 2 \
+     --nodes-max 6 \
+     --managed
+   ```
+
+3. **Install the Amazon EBS CSI driver** (for dynamic `gp3` storage provisioner):
+   ```bash
+   eksctl create addon --name aws-ebs-csi-driver --cluster qwen-platform --force
+   ```
+
+4. **Build and push the Qwen container image to Amazon ECR**:
+   ```bash
+   # Create ECR repository
+   aws ecr create-repository --repository-name qwen-llm --region us-east-1
+
+   # Authenticate Docker to ECR
+   ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+   aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com
+
+   # Build and push image
+   docker build -t ${ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/qwen-llm:2.5-3b roles/qwen_llm/files
+   docker push ${ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/qwen-llm:2.5-3b
+   ```
+
+5. **Update [vars/aws-eks.yml](vars/aws-eks.yml)** with your ECR image URI and cluster settings:
+   ```yaml
+   k8s_storage_class: "gp3"
+   qwen_build_local: false
+   qwen_image: "<YOUR_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/qwen-llm:2.5-3b"
+   ```
+
+6. **Deploy the platform**:
+   ```bash
+   ./scripts/deploy.sh --env aws
+   # Or:
+   ansible-playbook -i inventory.ini playbook.yml -e @vars/aws-eks.yml
+   ```
+
+---
+
+### 5. Azure AKS Deployment (Microsoft Azure)
+
+1. **Prerequisites**:
+   - Install Azure CLI (`az`).
+   - Log in: `az login`.
+
+2. **Create Resource Group and AKS Cluster**:
+   ```bash
+   az group create --name qwen-rg --location eastus
+
+   az aks create \
+     --resource-group qwen-rg \
+     --name qwen-aks-cluster \
+     --node-count 2 \
+     --node-vm-size Standard_D4s_v5 \
+     --enable-managed-identity \
+     --generate-ssh-keys
+
+   # Retrieve kubeconfig credentials
+   az aks get-credentials --resource-group qwen-rg --name qwen-aks-cluster --overwrite-existing
+   ```
+
+3. **Build and push the Qwen container image to Azure Container Registry (ACR)**:
+   ```bash
+   # Create ACR registry
+   az acr create --resource-group qwen-rg --name qwenregistry$RANDOM --sku Basic --admin-enabled true
+   ACR_NAME=$(az acr list --resource-group qwen-rg --query "[0].name" -o tsv)
+
+   # Attach ACR to AKS cluster for seamless image pulling
+   az aks update --resource-group qwen-rg --name qwen-aks-cluster --attach-acr $ACR_NAME
+
+   # Build and push image via ACR Tasks
+   az acr build --registry $ACR_NAME --image qwen-llm:2.5-3b roles/qwen_llm/files
+   ```
+
+4. **Update [vars/azure-aks.yml](vars/azure-aks.yml)** with your ACR image URI:
+   ```yaml
+   k8s_storage_class: "managed-csi"
+   qwen_build_local: false
+   qwen_image: "<YOUR_ACR_NAME>.azurecr.io/qwen-llm:2.5-3b"
+   ```
+
+5. **Deploy the platform**:
+   ```bash
+   ./scripts/deploy.sh --env azure
+   # Or:
+   ansible-playbook -i inventory.ini playbook.yml -e @vars/azure-aks.yml
+   ```
 
 ---
 
 ## Web Portal & Service URLs
 
-Once deployed, access the services via Ingress or direct NodePorts on Docker Desktop:
+Once deployed, access the services via Ingress, direct NodePorts, or Cloud LoadBalancers:
 
 | Service | Ingress URL | Direct NodePort URL | Default Credentials |
 | :--- | :--- | :--- | :--- |
@@ -162,6 +345,11 @@ Once deployed, access the services via Ingress or direct NodePorts on Docker Des
 | **Grafana Dashboards** | `http://localhost:30085` | `http://localhost:30085` (or `http://localhost:3000`) | `admin` / `GrafanaMasterAdmin2026!` (or Anonymous Admin) |
 | **Prometheus Metrics** | `http://localhost:30091` | `http://localhost:30091` (or `http://localhost:9090`) | N/A |
 | **Jaeger Tracing UI** | `http://localhost:30086` | `http://localhost:30086` (or `http://localhost:16686`) | N/A |
+
+> **Note for Port-Forwarding**: If NodePort or Ingress is not exposed on your host, run the helper script:
+> ```bash
+> ./scripts/port_forward.sh
+> ```
 
 ---
 
@@ -173,6 +361,83 @@ Once deployed, access the services via Ingress or direct NodePorts on Docker Des
 | `user1` | `User1Pass123!` | Standard User | 100,000 | `sk-user1-secret-key-2026` |
 | `user2` | `User2Pass123!` | Standard User | 100,000 | `sk-user2-secret-key-2026` |
 | `user3` | `User3Pass123!` | Standard User | 100,000 | `sk-user3-secret-key-2026` |
+
+---
+
+## How to Add a New User
+
+New users can be added at runtime through the **Keycloak Admin Console**, declaratively via **Ansible**, or via **Self-Registration**.
+
+### Method 1: Keycloak Admin Console (Recommended for Runtime Management)
+
+1. Open the Keycloak Admin Console at `http://localhost:30090/auth` (or `http://localhost/auth`).
+2. Log in with the Master Admin credentials:
+   - **Username**: `admin`
+   - **Password**: `KeycloakMasterAdmin2026!`
+3. In the top-left realm dropdown, switch from `master` to the **`llm-platform`** realm.
+4. In the left sidebar, click **Manage > Users**, then click the **Add user** button.
+5. Enter the user details:
+   - **Username**: e.g., `janedoe`
+   - **Email**: `janedoe@example.com`
+   - **First name**: `Jane`
+   - **Last name**: `Doe`
+   - Ensure **Enabled** is switched to **ON**.
+   - Click **Create**.
+6. Switch to the **Credentials** tab:
+   - Click **Set password**.
+   - Enter and confirm the password (e.g. `JaneSecurePass123!`).
+   - Toggle **Temporary** to **OFF** so the user is not prompted to reset it immediately.
+   - Click **Save**.
+7. Switch to the **Role mapping** tab:
+   - Click **Assign role**.
+   - Filter by realm roles and assign **`user`** (for standard access) or **`admin`** (for admin portal controls).
+8. **Automatic Provisioning**:
+   - The user can now immediately log in at the Token Portal (`http://localhost:8000` or `http://localhost/`).
+   - Upon first login, the platform automatically provisions a **100,000 initial token balance**, a monthly quota, and generates an active OpenAI-compatible API key (`sk-...`).
+
+---
+
+### Method 2: Declarative Pre-Provisioning via Ansible
+
+You can add users directly into the infrastructure configuration so they are provisioned upon deployment:
+
+1. Open [group_vars/all.yml](group_vars/all.yml).
+2. Locate the `initial_users` list and append your new user entry:
+   ```yaml
+   initial_users:
+     - username: "janedoe"
+       email: "janedoe@example.com"
+       password: "JaneSecurePass123!"
+       first_name: "Jane"
+       last_name: "Doe"
+       is_admin: false          # Set to true for admin rights
+       initial_tokens: 100000   # Initial token allocation
+       monthly_quota: 100000    # Recurring monthly quota
+   ```
+3. Re-apply the authentication and realm configuration:
+   ```bash
+   ansible-playbook -i inventory.ini playbook.yml --tags auth
+   ```
+
+---
+
+### Method 3: Self-Registration via Web Portal
+
+1. On the Token Portal login screen (`http://localhost/login`), click the **Register** link to be redirected to the Keycloak registration page.
+2. Complete the registration form (username, email, password).
+3. Upon first login, the Token Portal automatically allocates **100,000 free tokens** and generates an API key.
+
+---
+
+### Method 4: Managing Token Balances & Quotas as an Administrator
+
+1. Log in to the Token Portal with an admin account (e.g., `admin` / `AdminPass123!`).
+2. Click **Admin Console** in the top navigation bar (or navigate to `http://localhost/admin`).
+3. You can:
+   - View all registered users and their current remaining token balances.
+   - Click **Add Tokens** (e.g., grant +50,000 or +100,000 tokens to any user).
+   - Set custom recurring **Monthly Quotas**.
+   - **Reset Balances** for individual users or all users across the platform.
 
 ---
 
@@ -232,31 +497,6 @@ async function main() {
 }
 main();
 ```
-
----
-
-## Testing & Autoscaling Verification
-
-### 1. Automated Functional Test
-Verify health, token deduction, and admin operations:
-```bash
-python3 scripts/test_api.py http://localhost:8000
-```
-
-### 2. Concurrency Autoscaling Demonstration (1 to 6 Pods)
-To watch the cluster scale from 1 pod up to 6 pods under concurrent load:
-
-1. In Terminal 1, watch the pods and HPA:
-```bash
-kubectl get hpa,pods -n llm-platform -w
-```
-
-2. In Terminal 2, launch concurrent requests:
-```bash
-python3 scripts/load_test_autoscale.py http://localhost:8000
-```
-
-You will observe the HPA detect the load on Pod 1 and scale the deployment to 2, 3, up to 6 pods across the 2 worker nodes!
 
 ---
 

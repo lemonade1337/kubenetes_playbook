@@ -24,4 +24,5 @@
     state: present
     definition: "{{ item }}"
   loop: "{{ lookup('template', 'metrics-server.yml.j2') | from_yaml_all | list }}"
+  when: deploy_metrics_server | default(true) | bool
   ignore_errors: true

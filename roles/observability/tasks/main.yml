@@ -42,7 +42,8 @@
     kubeconfig: "{{ k8s_kubeconfig | default(omit) }}"
     context: "{{ k8s_context | default(omit) if k8s_context else omit }}"
     state: present
-    definition: "{{ lookup('template', 'jaeger-service.yml.j2') | from_yaml }}"
+    definition: "{{ item }}"
+  loop: "{{ lookup('template', 'jaeger-service.yml.j2') | from_yaml_all | list }}"
 
 # ------------------------------------------------------------------------------
 # 3. Grafana Dashboard & Visualization Deployment (1 Pod)

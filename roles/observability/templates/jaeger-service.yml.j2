@@ -8,11 +8,10 @@ metadata:
     app.kubernetes.io/name: jaeger
     app.kubernetes.io/part-of: qwen-ai-platform
 spec:
-  type: NodePort
+  type: ClusterIP
   ports:
   - port: {{ jaeger_ui_port }}
     targetPort: {{ jaeger_ui_port }}
-    nodePort: {{ nodeport_jaeger }}
     name: ui
   - port: {{ jaeger_otlp_grpc_port }}
     targetPort: {{ jaeger_otlp_grpc_port }}
@@ -27,5 +26,24 @@ spec:
     targetPort: 6831
     protocol: UDP
     name: jaeger-compact
+  selector:
+    app: jaeger
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ jaeger_service_name }}-ui
+  namespace: {{ k8s_namespace }}
+  labels:
+    app: jaeger
+    app.kubernetes.io/name: jaeger-ui
+    app.kubernetes.io/part-of: qwen-ai-platform
+spec:
+  type: NodePort
+  ports:
+  - port: {{ jaeger_ui_port }}
+    targetPort: {{ jaeger_ui_port }}
+    nodePort: {{ nodeport_jaeger }}
+    name: ui
   selector:
     app: jaeger
