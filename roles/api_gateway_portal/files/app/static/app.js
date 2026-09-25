@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function switchTab(tabName) {
     document.querySelectorAll('.snippet-content').forEach(el => el.classList.add('hidden'));
     document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('text-indigo-400', 'bg-slate-800');
+        btn.classList.remove('text-blue-400', 'bg-slate-800');
         btn.classList.add('text-slate-400');
     });
 
@@ -37,7 +37,7 @@ function switchTab(tabName) {
     if (activeSnippet) activeSnippet.classList.remove('hidden');
     if (activeTabBtn) {
         activeTabBtn.classList.remove('text-slate-400');
-        activeTabBtn.classList.add('text-indigo-400', 'bg-slate-800');
+        activeTabBtn.classList.add('text-blue-400', 'bg-slate-800');
     }
 }
 
@@ -74,7 +74,7 @@ function toggleKeyVisibility(keyId) {
 // Toast notification
 function showToast(message) {
     const toast = document.createElement('div');
-    toast.className = 'fixed bottom-5 right-5 bg-indigo-600 text-white px-4 py-2.5 rounded-xl shadow-2xl text-xs font-semibold z-50 flex items-center space-x-2 transition-all transform duration-300';
+    toast.className = 'fixed bottom-5 right-5 bg-blue-600 text-white px-4 py-2.5 rounded-xl shadow-2xl text-xs font-semibold z-50 flex items-center space-x-2 transition-all transform duration-300';
     toast.innerHTML = `<i class="fa-solid fa-check"></i> <span>${message}</span>`;
     document.body.appendChild(toast);
     setTimeout(() => {
@@ -128,12 +128,12 @@ function clearChatHistory() {
     if (container) {
         container.innerHTML = `
             <div class="flex items-start space-x-3 chat-message assistant-message">
-                <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white flex-shrink-0 text-xs shadow-md shadow-indigo-600/30">
+                <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 to-sky-500 flex items-center justify-center text-white flex-shrink-0 text-xs shadow-md shadow-blue-600/30">
                     <i class="fa-solid fa-robot"></i>
                 </div>
                 <div class="flex-1 space-y-1">
                     <div class="flex items-center space-x-2">
-                        <span class="text-xs font-semibold text-indigo-400">Qwen 2.5 3B</span>
+                        <span class="text-xs font-semibold text-blue-400">Qwen 2.5 3B</span>
                         <span class="text-[10px] text-slate-500">AI Assistant</span>
                     </div>
                     <div class="p-4 bg-slate-950 border border-slate-800 rounded-2xl rounded-tl-sm text-sm text-slate-200 leading-relaxed max-w-[90%] shadow-md">
@@ -188,7 +188,7 @@ function appendUserMessage(text) {
                     <span class="text-[10px] text-slate-500">${timeStr}</span>
                     <span class="text-xs font-semibold text-slate-300">You</span>
                 </div>
-                <div class="p-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-2xl rounded-tr-sm text-sm leading-relaxed max-w-[85%] shadow-md break-words">
+                <div class="p-3.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-2xl rounded-tr-sm text-sm leading-relaxed max-w-[85%] shadow-md break-words">
                     ${formatContent(text)}
                 </div>
             </div>
@@ -208,16 +208,16 @@ function appendAssistantPlaceholder() {
 
     const placeholderHtml = `
         <div class="flex items-start space-x-3 chat-message assistant-message" id="${msgId}">
-            <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white flex-shrink-0 text-xs shadow-md shadow-indigo-600/30">
+            <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 to-sky-500 flex items-center justify-center text-white flex-shrink-0 text-xs shadow-md shadow-blue-600/30">
                 <i class="fa-solid fa-robot"></i>
             </div>
             <div class="flex-1 space-y-1">
                 <div class="flex items-center space-x-2">
-                    <span class="text-xs font-semibold text-indigo-400">Qwen 2.5 3B</span>
+                    <span class="text-xs font-semibold text-blue-400">Qwen 2.5 3B</span>
                     <span class="text-[10px] text-amber-400 flex items-center"><i class="fa-solid fa-spinner fa-spin mr-1"></i> Thinking...</span>
                 </div>
                 <div class="p-4 bg-slate-950 border border-slate-800 rounded-2xl rounded-tl-sm text-sm text-slate-400 leading-relaxed max-w-[90%] shadow-md flex items-center space-x-2">
-                    <span class="inline-block w-2 h-2 rounded-full bg-indigo-500 animate-ping"></span>
+                    <span class="inline-block w-2 h-2 rounded-full bg-blue-500 animate-ping"></span>
                     <span>Generating response from cluster...</span>
                 </div>
             </div>
@@ -239,16 +239,16 @@ function updateAssistantMessage(placeholderId, content, usage) {
 
     placeholder.outerHTML = `
         <div class="flex items-start space-x-3 chat-message assistant-message group">
-            <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white flex-shrink-0 text-xs shadow-md shadow-indigo-600/30">
+            <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 to-sky-500 flex items-center justify-center text-white flex-shrink-0 text-xs shadow-md shadow-blue-600/30">
                 <i class="fa-solid fa-robot"></i>
             </div>
             <div class="flex-1 space-y-1">
                 <div class="flex items-center justify-between max-w-[90%]">
                     <div class="flex items-center space-x-2">
-                        <span class="text-xs font-semibold text-indigo-400">Qwen 2.5 3B</span>
+                        <span class="text-xs font-semibold text-blue-400">Qwen 2.5 3B</span>
                         <span class="text-[10px] text-slate-500">${timeStr}</span>
                     </div>
-                    ${tokenInfo ? `<span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-indigo-300 font-mono"><i class="fa-solid fa-bolt text-amber-400 mr-1"></i>${tokenInfo}</span>` : ''}
+                    ${tokenInfo ? `<span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-blue-300 font-mono"><i class="fa-solid fa-bolt text-amber-400 mr-1"></i>${tokenInfo}</span>` : ''}
                 </div>
                 <div class="p-4 bg-slate-950 border border-slate-800 rounded-2xl rounded-tl-sm text-sm text-slate-200 leading-relaxed max-w-[90%] shadow-md prose prose-invert prose-sm break-words">
                     ${formattedHtml}
@@ -258,6 +258,14 @@ function updateAssistantMessage(placeholderId, content, usage) {
                         <i class="fa-solid fa-copy"></i>
                         <span>Copy message</span>
                     </button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    const container = document.getElementById('chat-messages-container');
+    container.scrollTop = container.scrollHeight;
+}
                 </div>
             </div>
         </div>
@@ -388,7 +396,7 @@ async function updateRemainingBalance() {
             const data = await res.json();
             const counter = document.getElementById('balance-counter');
             if (counter) {
-                counter.innerHTML = `${data.remaining_tokens.toLocaleString()} <span class="text-base font-normal text-indigo-400">tokens</span>`;
+                counter.innerHTML = `${data.remaining_tokens.toLocaleString()} <span class="text-base font-normal text-blue-400">tokens</span>`;
             }
 
             const quotaText = document.getElementById('quota-usage-text');
@@ -433,10 +441,10 @@ function appendUsageLogRow(model, promptTokens, completionTokens, totalTokens) {
     const rowHtml = `
         <tr class="hover:bg-slate-850/50 transition">
             <td class="px-4 py-2.5 font-mono text-slate-400">${timeFormatted}</td>
-            <td class="px-4 py-2.5"><span class="px-2 py-0.5 rounded bg-slate-800 text-indigo-300 font-mono">${model}</span></td>
+            <td class="px-4 py-2.5"><span class="px-2 py-0.5 rounded bg-slate-800 text-blue-300 font-mono">${model}</span></td>
             <td class="px-4 py-2.5">${promptTokens}</td>
             <td class="px-4 py-2.5">${completionTokens}</td>
-            <td class="px-4 py-2.5 font-bold text-indigo-400">${totalTokens}</td>
+            <td class="px-4 py-2.5 font-bold text-blue-400">${totalTokens}</td>
             <td class="px-4 py-2.5"><span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 text-[10px] font-semibold">200 OK</span></td>
         </tr>
     `;

@@ -42,7 +42,7 @@ async def lifespan(app: FastAPI):
     logger.info("Gateway shutting down.")
 
 app = FastAPI(
-    title="Qwen 2.5 3B Token Management Portal & API Gateway",
+    title="API Gateway Portal",
     version="1.0.0",
     lifespan=lifespan
 )

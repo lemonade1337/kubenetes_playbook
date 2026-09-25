@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Qwen 2.5 3B AI Platform{% endblock %}</title>
+    <title>{% block title %}API Gateway{% endblock %}</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -13,11 +13,17 @@
                 extend: {
                     colors: {
                         brand: {
-                            50: '#eef2ff',
-                            500: '#6366f1',
-                            600: '#4f46e5',
-                            700: '#4338ca',
-                            900: '#312e81'
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                            950: '#0f172a'
                         }
                     }
                 }
@@ -31,27 +37,27 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans antialiased selection:bg-indigo-500 selection:text-white">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans antialiased selection:bg-blue-600 selection:text-white">
     <!-- Navbar -->
     <nav class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
-                    <i class="fa-solid fa-microchip text-white text-lg"></i>
+            <a href="/dashboard" class="flex items-center space-x-3 group">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-700 via-blue-600 to-sky-400 p-1 flex items-center justify-center shadow-lg shadow-blue-500/25 border border-blue-400/30 group-hover:scale-105 transition duration-200">
+                    <img src="/static/holstentor.svg" alt="Holstentor Lübeck" class="w-full h-full object-contain filter drop-shadow">
                 </div>
                 <div>
-                    <span class="font-bold text-lg bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">Qwen 2.5 3B</span>
-                    <span class="text-xs ml-2 px-2 py-0.5 rounded-full bg-indigo-950/80 text-indigo-400 border border-indigo-800/60 font-mono">K8s Cluster</span>
+                    <span class="font-bold text-lg bg-gradient-to-r from-blue-400 via-sky-300 to-white bg-clip-text text-transparent">API Gateway</span>
+                    <span class="text-xs ml-2 px-2 py-0.5 rounded-full bg-blue-950/80 text-blue-300 border border-blue-800/60 font-mono">Cluster</span>
                 </div>
-            </div>
+            </a>
 
             {% if user is defined and user %}
             <div class="flex items-center space-x-4">
-                <a href="/dashboard" class="px-3 py-1.5 text-sm font-medium rounded-lg hover:bg-slate-800 transition {% if request.url.path == '/dashboard' %}text-indigo-400 bg-slate-800/80{% else %}text-slate-300{% endif %}">
+                <a href="/dashboard" class="px-3 py-1.5 text-sm font-medium rounded-lg hover:bg-slate-800 transition {% if request.url.path == '/dashboard' %}text-blue-400 bg-slate-800/80{% else %}text-slate-300{% endif %}">
                     <i class="fa-solid fa-gauge mr-1.5"></i> Dashboard
                 </a>
                 {% if user.role == 'admin' or user.username == 'admin' %}
-                <a href="/admin" class="px-3 py-1.5 text-sm font-medium rounded-lg hover:bg-slate-800 transition {% if request.url.path == '/admin' %}text-amber-400 bg-slate-800/80{% else %}text-slate-300{% endif %}">
+                <a href="/admin" class="px-3 py-1.5 text-sm font-medium rounded-lg hover:bg-slate-800 transition {% if request.url.path == '/admin' %}text-blue-400 bg-slate-800/80{% else %}text-slate-300{% endif %}">
                     <i class="fa-solid fa-shield-halved mr-1.5"></i> Admin
                 </a>
                 {% endif %}
@@ -77,7 +83,7 @@
 
     <!-- Footer -->
     <footer class="border-t border-slate-900 bg-slate-950 py-6 text-center text-xs text-slate-500">
-        <p>Kubernetes Qwen 2.5 3B Cluster &bull; Keycloak OIDC Authentication &bull; Dynamic 1-6 Pod Autoscaling</p>
+        <p>Kubernetes API Gateway &bull; Keycloak OIDC Authentication &bull; Dynamic 1-6 Pod Autoscaling</p>
     </footer>
 
     <script src="/static/app.js"></script>

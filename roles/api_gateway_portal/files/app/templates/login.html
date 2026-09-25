@@ -1,20 +1,20 @@
 {% extends "base.html" %}
 
-{% block title %}Sign In - Qwen 2.5 3B AI Platform{% endblock %}
+{% block title %}Sign In - API Gateway{% endblock %}
 
 {% block content %}
 <div class="min-h-[75vh] flex items-center justify-center">
     <div class="w-full max-w-md bg-slate-900/90 border border-slate-800 rounded-2xl p-8 shadow-2xl relative overflow-hidden backdrop-blur">
         <!-- Glow accent -->
-        <div class="absolute -top-24 -left-24 w-48 h-48 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none"></div>
-        <div class="absolute -bottom-24 -right-24 w-48 h-48 bg-purple-500/20 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -top-24 -left-24 w-48 h-48 bg-blue-500/20 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -bottom-24 -right-24 w-48 h-48 bg-sky-500/20 rounded-full blur-3xl pointer-events-none"></div>
 
         <div class="text-center mb-8">
-            <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-600 to-purple-600 text-white text-2xl shadow-xl shadow-indigo-500/25 mb-4">
-                <i class="fa-solid fa-lock"></i>
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-700 via-blue-600 to-sky-500 p-2 shadow-xl shadow-blue-500/25 mb-4 border border-blue-400/30">
+                <img src="/static/holstentor.svg" alt="Holstentor Lübeck" class="w-full h-full object-contain filter drop-shadow">
             </div>
-            <h1 class="text-2xl font-bold text-white">Sign In to Platform</h1>
-            <p class="text-sm text-slate-400 mt-1">Access your Qwen 2.5 3B API keys and token balance</p>
+            <h1 class="text-2xl font-bold text-white">Sign In to API Gateway</h1>
+            <p class="text-sm text-slate-400 mt-1">Access your API keys and token balance</p>
         </div>
 
         {% if error %}
@@ -32,7 +32,7 @@
                         <i class="fa-solid fa-user text-sm"></i>
                     </div>
                     <input type="text" id="username" name="username" required placeholder="admin or user1" 
-                           class="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-700/80 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm transition">
+                           class="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-700/80 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm transition">
                 </div>
             </div>
 
@@ -43,11 +43,11 @@
                         <i class="fa-solid fa-key text-sm"></i>
                     </div>
                     <input type="password" id="password" name="password" required placeholder="••••••••" 
-                           class="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-700/80 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm transition">
+                           class="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-700/80 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm transition">
                 </div>
             </div>
 
-            <button type="submit" class="w-full py-2.5 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold rounded-xl shadow-lg shadow-indigo-600/30 transition transform active:scale-[0.99] flex items-center justify-center space-x-2">
+            <button type="submit" class="w-full py-2.5 px-4 bg-gradient-to-r from-blue-600 via-blue-500 to-sky-500 hover:from-blue-500 hover:to-sky-400 text-white font-semibold rounded-xl shadow-lg shadow-blue-600/30 transition transform active:scale-[0.99] flex items-center justify-center space-x-2">
                 <span>Sign In</span>
                 <i class="fa-solid fa-arrow-right text-xs"></i>
             </button>
@@ -57,21 +57,21 @@
         <div class="mt-8 pt-6 border-t border-slate-800/80">
             <p class="text-xs font-medium text-slate-400 mb-2">Quick Sign-In (Pre-configured Users):</p>
             <div class="grid grid-cols-2 gap-2">
-                <button type="button" onclick="fillCredentials('admin', 'AdminPass123!')" class="px-2.5 py-1.5 bg-amber-950/40 hover:bg-amber-900/50 border border-amber-800/50 rounded-lg text-amber-300 text-xs text-left transition flex items-center justify-between">
+                <button type="button" onclick="fillCredentials('admin', 'AdminPass123!')" class="px-2.5 py-1.5 bg-blue-950/40 hover:bg-blue-900/50 border border-blue-800/50 rounded-lg text-blue-300 text-xs text-left transition flex items-center justify-between">
                     <span>👑 Admin</span>
-                    <span class="text-[10px] text-amber-400/70">100k</span>
+                    <span class="text-[10px] text-blue-400/70">100k</span>
                 </button>
                 <button type="button" onclick="fillCredentials('user1', 'User1Pass123!')" class="px-2.5 py-1.5 bg-slate-800/80 hover:bg-slate-750 border border-slate-700 rounded-lg text-slate-300 text-xs text-left transition flex items-center justify-between">
                     <span>👤 user1</span>
-                    <span class="text-[10px] text-indigo-400/80">100k</span>
+                    <span class="text-[10px] text-blue-400/80">100k</span>
                 </button>
                 <button type="button" onclick="fillCredentials('user2', 'User2Pass123!')" class="px-2.5 py-1.5 bg-slate-800/80 hover:bg-slate-750 border border-slate-700 rounded-lg text-slate-300 text-xs text-left transition flex items-center justify-between">
                     <span>👤 user2</span>
-                    <span class="text-[10px] text-indigo-400/80">100k</span>
+                    <span class="text-[10px] text-blue-400/80">100k</span>
                 </button>
                 <button type="button" onclick="fillCredentials('user3', 'User3Pass123!')" class="px-2.5 py-1.5 bg-slate-800/80 hover:bg-slate-750 border border-slate-700 rounded-lg text-slate-300 text-xs text-left transition flex items-center justify-between">
                     <span>👤 user3</span>
-                    <span class="text-[10px] text-indigo-400/80">100k</span>
+                    <span class="text-[10px] text-blue-400/80">100k</span>
                 </button>
             </div>
         </div>

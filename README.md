@@ -10,53 +10,107 @@ Supports deployment across **macOS**, **Linux**, **Windows (WSL2 / Docker Deskto
 
 ```mermaid
 flowchart TD
-    subgraph Clients["Clients & Users"]
-        Browser["Web Browser / Portal"]
-        APIClient["OpenAI SDK / cURL / Apps"]
+    %% =========================================================================
+    %% Modern Blue, White, and Slate-Grey Style Palette
+    %% =========================================================================
+    classDef clientBox fill:#f0f7ff,stroke:#2563eb,stroke-width:1.5px,color:#0f172a
+    classDef ingressBox fill:#1e293b,stroke:#0f172a,stroke-width:2px,color:#ffffff
+    classDef gatewayBox fill:#dbeafe,stroke:#1d4ed8,stroke-width:2px,color:#1e3a8a
+    classDef authBox fill:#e2e8f0,stroke:#475569,stroke-width:1.5px,color:#0f172a
+    classDef dbBox fill:#f1f5f9,stroke:#64748b,stroke-width:1.5px,color:#1e293b
+    classDef llmBox fill:#bfdbfe,stroke:#2563eb,stroke-width:2px,color:#1e3a8a
+    classDef promBox fill:#eff6ff,stroke:#2563eb,stroke-width:1.5px,color:#1e40af
+    classDef jaegerBox fill:#e0f2fe,stroke:#0284c7,stroke-width:1.5px,color:#0369a1
+    classDef grafanaBox fill:#ffffff,stroke:#1d4ed8,stroke-width:1.5px,color:#0f172a
+    classDef scaleBox fill:#f8fafc,stroke:#94a3b8,stroke-width:1.5px,color:#334155
+
+    %% -------------------------------------------------------------------------
+    %% Clients & External Actors
+    %% -------------------------------------------------------------------------
+    subgraph Clients["👥 Clients & Users"]
+        Browser["🖥️ Web Browser / Portal UI"]:::clientBox
+        APIClient["⚡ OpenAI SDK / cURL / Apps"]:::clientBox
+        AdminOps["📊 SRE / DevOps / Admins"]:::clientBox
     end
 
-    subgraph IngressLayer["Ingress & Routing"]
-        Ingress["NGINX Ingress / NodePorts (30080, 30090, 30100)"]
+    %% -------------------------------------------------------------------------
+    %% Ingress & Edge Routing
+    %% -------------------------------------------------------------------------
+    subgraph IngressLayer["🌐 Ingress & Routing Layer"]
+        Ingress["🔀 NGINX Ingress Controller / NodePorts<br/>(Ports: 30080 &bull; 30090 &bull; 30100 &bull; 30085 &bull; 30086 &bull; 30091)"]:::ingressBox
     end
 
-    subgraph Node1["Kubernetes Worker Node 1"]
-        GW1["API Gateway & Portal (Pod 1)"]
-        KC1["Keycloak Auth (Pod 1)"]
-        PG1["PostgreSQL HA (Pod 1)"]
-        QW1["Qwen 2.5 3B (Pod 1 - Active)"]
+    %% -------------------------------------------------------------------------
+    %% Core Kubernetes Cluster
+    %% -------------------------------------------------------------------------
+    subgraph Cluster["☸️ Kubernetes Cluster (llm-platform namespace)"]
+        subgraph Node1["Worker Node 1"]
+            GW1["API Gateway & Portal<br/>(Pod 1 &bull; FastAPI + OTel)"]:::gatewayBox
+            KC1["Keycloak IAM<br/>(Pod 1 &bull; Auth Server)"]:::authBox
+            PG1[("PostgreSQL HA<br/>(Pod 1 &bull; Primary + Exporter)")]:::dbBox
+            QW1["Qwen 2.5 3B Engine<br/>(Pod 1 &bull; Active Inference)"]:::llmBox
+        end
+
+        subgraph Node2["Worker Node 2"]
+            GW2["API Gateway & Portal<br/>(Pod 2 &bull; FastAPI + OTel)"]:::gatewayBox
+            KC2["Keycloak IAM<br/>(Pod 2 &bull; Auth Server)"]:::authBox
+            PG2[("PostgreSQL HA<br/>(Pod 2 &bull; Standby + Exporter)")]:::dbBox
+            QW2["Qwen 2.5 3B Engine<br/>(Pods 2–6 &bull; Autoscaled Replicas)"]:::llmBox
+        end
+
+        %% Observability Stack
+        subgraph ObservabilityLayer["📈 Full Observability & Telemetry Stack"]
+            Prometheus["📊 Prometheus Server<br/>(Scrapes Metrics :9090)"]:::promBox
+            Jaeger["🔍 Jaeger Tracing<br/>(OTLP Ingestion :4318 / UI :16686)"]:::jaegerBox
+            Grafana["📈 Grafana Visualizer<br/>(Platform Dashboards :3000)"]:::grafanaBox
+        end
+
+        %% Autoscaling Subsystem
+        subgraph ScalingLayer["⚡ Dynamic Autoscaling Engine"]
+            HPA["HorizontalPodAutoscaler (HPA)<br/>Min: 1 Pod &bull; Max: 6 Pods (80% CPU Target)"]:::scaleBox
+            MetricsSrv["Kubernetes Metrics Server"]:::scaleBox
+        end
     end
 
-    subgraph Node2["Kubernetes Worker Node 2"]
-        GW2["API Gateway & Portal (Pod 2)"]
-        KC2["Keycloak Auth (Pod 2)"]
-        PG2["PostgreSQL HA (Pod 2)"]
-        QW2["Qwen 2.5 3B (Auto-scaled Pods 2-6)"]
-    end
-
-    subgraph Scaling["Autoscaling Engine"]
-        HPA["HorizontalPodAutoscaler (HPA)<br/>Min: 1 Pod &bull; Max: 6 Pods"]
-        Metrics["Kubernetes Metrics Server"]
-    end
-
-    Browser -->|HTTP UI| Ingress
+    %% -------------------------------------------------------------------------
+    %% Traffic & Communication Flow
+    %% -------------------------------------------------------------------------
+    Browser -->|HTTP Web UI| Ingress
     APIClient -->|Bearer API Key| Ingress
+    AdminOps -->|Dashboards & Traces| Ingress
 
-    Ingress --> GW1
-    Ingress --> GW2
-    Ingress --> KC1
-    Ingress --> KC2
+    Ingress -->|Route / & /v1/*| GW1
+    Ingress -->|Route / & /v1/*| GW2
+    Ingress -->|Route /auth/*| KC1
+    Ingress -->|Route /auth/*| KC2
+    Ingress -.->|Route :30085| Grafana
+    Ingress -.->|Route :30086| Jaeger
+    Ingress -.->|Route :30091| Prometheus
 
-    GW1 -->|Validate Auth & Deduct Tokens| PG1
-    GW2 -->|Validate Auth & Deduct Tokens| PG2
-    GW1 -->|Keycloak Token Exchange| KC1
-    GW2 -->|Keycloak Token Exchange| KC2
+    GW1 -->|Token Validation & Ledger| PG1
+    GW2 -->|Token Validation & Ledger| PG2
+    GW1 -->|OIDC / OAuth2 Validation| KC1
+    GW2 -->|OIDC / OAuth2 Validation| KC2
 
     GW1 -->|Forward /v1/chat/completions| QW1
     GW2 -->|Forward /v1/chat/completions| QW2
 
-    Metrics -->|CPU & Load Signals| HPA
-    HPA -->|Spawns New Pods When in Use| QW1
-    HPA -->|Spawns New Pods When in Use| QW2
+    %% Observability Connections
+    GW1 -.->|OTLP Traces| Jaeger
+    GW2 -.->|OTLP Traces| Jaeger
+    Prometheus -.->|Scrape /metrics| GW1
+    Prometheus -.->|Scrape /metrics| GW2
+    Prometheus -.->|Scrape /auth/metrics| KC1
+    Prometheus -.->|Scrape /auth/metrics| KC2
+    Prometheus -.->|Scrape Port 9187| PG1
+    Prometheus -.->|Scrape Port 9187| PG2
+    Grafana -->|PromQL Queries| Prometheus
+    Grafana -->|Trace Queries| Jaeger
+
+    %% Autoscaling Connections
+    MetricsSrv -->|CPU Utilization Signals| HPA
+    HPA ==>|Scale Inference Replicas| QW1
+    HPA ==>|Scale Inference Replicas| QW2
 ```
 
 ---

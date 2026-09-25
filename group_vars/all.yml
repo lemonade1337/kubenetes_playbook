@@ -79,7 +79,7 @@ qwen_build_local: true # Set to true to build image locally with Docker; set to 
 qwen_node_import_enabled: true # Automatically import image into local container nodes (Kind / Docker Desktop / k3d)
 qwen_min_replicas: 1
 qwen_max_replicas: 6
-qwen_hpa_cpu_percent: 50 # When active inference occurs, CPU load triggers autoscaling
+qwen_hpa_cpu_percent: 80 # Target CPU utilization percentage to trigger gradual autoscaling
 qwen_service_name: "qwen-llm-service"
 qwen_port: 11434
 qwen_storage_size: "10Gi"
