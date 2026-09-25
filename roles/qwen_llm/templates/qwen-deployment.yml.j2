@@ -42,11 +42,16 @@ spec:
           ollama serve &
           SERVER_PID=$!
           echo "[Qwen Service] Waiting for Ollama engine to start..."
-          until curl -s http://127.0.0.1:11434/api/tags >/dev/null 2>&1; do
+          until ollama list >/dev/null 2>&1; do
             sleep 1
           done
-          echo "[Qwen Service] Engine ready. Pulling model {{ qwen_model_name }}..."
-          ollama pull {{ qwen_model_name }}
+          echo "[Qwen Service] Engine ready. Checking model {{ qwen_model_name }}..."
+          if ! ollama list | grep -q '{{ qwen_model_name }}'; then
+            echo "[Qwen Service] Pulling model {{ qwen_model_name }}..."
+            ollama pull {{ qwen_model_name }}
+          else
+            echo "[Qwen Service] Model {{ qwen_model_name }} already present in cache."
+          fi
           echo "[Qwen Service] Model {{ qwen_model_name }} is ready for inference."
           wait $SERVER_PID
         ports:
@@ -70,14 +75,14 @@ spec:
             - /bin/sh
             - -c
             - "ollama list | grep -q '{{ qwen_model_name }}'"
-          initialDelaySeconds: 30
-          periodSeconds: 10
+          initialDelaySeconds: 10
+          periodSeconds: 5
           timeoutSeconds: 5
         livenessProbe:
           httpGet:
             path: /api/tags
             port: {{ qwen_port }}
-          initialDelaySeconds: 60
+          initialDelaySeconds: 30
           periodSeconds: 15
           timeoutSeconds: 5
         volumeMounts:
@@ -85,4 +90,6 @@ spec:
           mountPath: /root/.ollama
       volumes:
       - name: ollama-cache
-        emptyDir: {}
+        hostPath:
+          path: /tmp/ollama-models
+          type: DirectoryOrCreate
